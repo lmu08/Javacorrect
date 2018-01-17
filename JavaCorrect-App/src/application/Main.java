@@ -9,7 +9,8 @@ import javafx.stage.Stage;
 public class Main
 extends Application {
 
-	public static void main(final String[] args) {
+	public static void main(final String[] args) throws ClassNotFoundException {
+		MysqlConnexion myqlco = new MysqlConnexion();
 		launch(args);
 	}
 
