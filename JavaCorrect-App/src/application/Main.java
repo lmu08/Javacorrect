@@ -16,10 +16,19 @@ extends Application {
 	@Override
 	public void start(final Stage stage)
 	throws Exception {
-		final Parent root = FXMLLoader.load(getClass().getResource("/resources/Javacorrect.fxml"));
+		try {
+			final Parent root = FXMLLoader.load(getClass().getResource("/ui/Javacorrect.fxml"));
 
-		stage.setTitle("Javacorrect");
-		stage.setScene(new Scene(root));
-		stage.show();
+			stage.setTitle("Javacorrect");
+			stage.setScene(new Scene(root));
+			stage.show();
+		} catch (final NullPointerException e) {
+			System.err.println("The application failed to load (resource not found). Error :\n" + e);
+		}
+
+		//		How to access the controller :
+		//		final FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/Javacorrect.fxml"));
+		//		stage.setScene(new Scene(loader.load()));
+		//		final Controller controller = loader.getController();
 	}
 }
