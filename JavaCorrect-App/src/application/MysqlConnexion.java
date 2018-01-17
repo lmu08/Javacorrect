@@ -9,43 +9,16 @@ import java.io.InputStream;
 import java.util.Properties;
 
 public class MysqlConnexion {
-	private String user;
-	private String password;
-	private String jdbcDriver;
-	private String port;
-	private String host;
-	private String dbname;
-	private String url;
+	
 	private static Connection connect = null;
 	
-	
-	
-	// Constructeur privé
-	public MysqlConnexion() throws ClassNotFoundException {
-		Properties prop = new Properties();
-		InputStream input;
-		try {
-			File file = new File("resources/db.properties");
-			
-			input = new FileInputStream(file);
-			prop.load(input);
-			this.user = prop.getProperty("USER");
-			this.password = prop.getProperty("PASSWORD");
-			this.jdbcDriver = prop.getProperty("JDBC_DRIVER");
-			this.port = prop.getProperty("PORT");
-			this.dbname = prop.getProperty("DBNAME");
-			this.host = prop.getProperty("HOST");
-			this.url = "jdbc:mysql://localhost:3306/javacorrectdb";
-		} catch (IOException ex) {
-			ex.printStackTrace();
-		}
-		System.out.println(this.host);
+	public MysqlConnexion(MysqlPropertiesParser properties) throws ClassNotFoundException {
 		
 		try {
 			Class.forName("com.mysql.jdbc.Driver");  
 			connect =
-		       DriverManager.getConnection(this.url, this.user, this.password);
-
+		       DriverManager.getConnection(properties.getUrl(), properties.getUser(), properties.getPassword());
+			System.out.println("Le driver s'est connecté à la base de données avec succès");
 		    
 		} catch (SQLException ex) {
 		    // handle any errors
@@ -56,9 +29,9 @@ public class MysqlConnexion {
 
 	}
 	
-	public static Connection getInstance() throws ClassNotFoundException{
+	public static synchronized Connection getInstance(MysqlPropertiesParser properties) throws ClassNotFoundException{
 	    if(connect == null){
-	      new MysqlConnexion();
+	      new MysqlConnexion(properties);
 	    }
 	    return connect;   
 	  } 

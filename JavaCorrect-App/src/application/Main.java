@@ -1,5 +1,9 @@
 package application;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -9,8 +13,21 @@ import javafx.stage.Stage;
 public class Main
 extends Application {
 
-	public static void main(final String[] args) throws ClassNotFoundException {
-		MysqlConnexion myqlco = new MysqlConnexion();
+	public static void main(final String[] args) throws ClassNotFoundException, SQLException {
+		MysqlPropertiesParser properties = new MysqlPropertiesParser();
+		Connection myqlco = MysqlConnexion.getInstance(properties);
+		
+		System.out.println(properties.getDbname());
+		String insertStudent =
+		"INSERT INTO " + properties.getDbname() + ".CLASSE (intituleClasse) values (?);";
+		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(insertStudent);
+		preparedstatement.setString(1,"L3 DANT");
+		try {
+			preparedstatement.executeUpdate();
+		}
+		catch(Exception e) {
+			System.out.println("Already exists");
+		}
 		launch(args);
 	}
 
