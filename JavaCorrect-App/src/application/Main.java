@@ -1,10 +1,15 @@
 package application;
 
+import java.io.IOException;
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.UUID;
 
 import application.MysqlConnexion;
 import application.MysqlPropertiesParser;
+import application.MysqlRequest;
+import application.StudentCsvParser;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -14,21 +19,24 @@ import javafx.stage.Stage;
 public class Main
 extends Application {
 
-	public static void main(final String[] args) throws ClassNotFoundException, SQLException {
-		MysqlPropertiesParser properties = new MysqlPropertiesParser();
-		Connection myqlco = MysqlConnexion.getInstance(properties);
-		
-//		System.out.println(properties.getDbname());
-//		String insertStudent =
-//		"INSERT INTO " + properties.getDbname() + ".CLASSE (intituleClasse) values (?);";
-//		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(insertStudent);
-//		preparedstatement.setString(1,"L3 DANT");
+	public static void main(final String[] args) {
+//		MysqlPropertiesParser properties = new MysqlPropertiesParser();
 //		try {
-//			preparedstatement.executeUpdate();
+//			Connection myqlco = MysqlConnexion.getInstance(properties);
+//			LocalDate today = LocalDate.now();
+//			String projectId = UUID.randomUUID()+"";
+//			MysqlRequest.insertProject(myqlco, projectId ,today, "toto" );
+//			MysqlRequest.getProject(myqlco, projectId);
+////			new StudentCsvParser("/home/flo/Documents/JavaCorrect/Javacorrect/studentTest.csv");
+//			MysqlRequest.insertEvaluation(myqlco, projectId, 1, 3514665, 1);
+//			MysqlRequest.updateNoteToEvaluation(myqlco, 10.5, projectId, 1, 3514665, 1);
+//			
+//		} catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//			
 //		}
-//		catch(Exception e) {
-//			System.out.println("Already exists");
-//		}
+		
 		launch(args);
 	}
 

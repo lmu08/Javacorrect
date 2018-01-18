@@ -80,7 +80,7 @@ implements Initializable {
 		private final SimpleStringProperty studentId;
 		private final SimpleIntegerProperty mark;
 		private final SimpleObjectProperty<Date> sendDate;
-
+		
 		public StudentProject(final String name, final String studentId, final Integer mark, final Date sendDate) {
 			this.name = (name == null) ? new SimpleStringProperty() : new SimpleStringProperty(name);
 			this.studentId = (studentId == null) ? new SimpleStringProperty() : new SimpleStringProperty(studentId);
@@ -122,35 +122,14 @@ implements Initializable {
 		final LocalDate deadline = deadlineDatePicker.getValue();
 		final String expectedOutputPath = expectedOutputButton.getText();
 		final String studentListPath = studentListButton.getText();
-		String dateExpi = deadline.getYear()+"-"+deadline.getMonth()+"-"+deadline.getDayOfMonth();
-		final String projectId = UUID.randomUUID()+"";
+		
 		//TODO Parse files + send data to DB + display response
-		try {
-			MysqlPropertiesParser properties = new MysqlPropertiesParser();
-			Connection myqlco = MysqlConnexion.getInstance(properties);
-			
-			System.out.println(properties.getDbname());
-			
-			String insertStudent =
-			"INSERT INTO " + properties.getDbname() + 
-			".PROJET (idProjet, dateExpi, intituleProjet) " + 
-			"VALUES (?, ?, ?);";
-			java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(insertStudent);
-			preparedstatement.setString(1,projectId);
-			preparedstatement.setDate(2, java.sql.Date.valueOf(dateExpi));
-			preparedstatement.setString(3, projectName);
-			
-			preparedstatement.executeUpdate();
-		}
-		catch(SQLException ex) {
-			System.out.println("SQLException: " + ex.getMessage());
-		    System.out.println("SQLState: " + ex.getSQLState());
-		    System.out.println("VendorError: " + ex.getErrorCode());
-		}
+//		new StudentCsvParser("/home/flo/Documents/JavaCorrect/Javacorrect/studentTest.csv");
 	}
 	
 	@FXML
 	private void handleDeleteProjectAction() {
 		//TODO Send delete request to DB + display response
 	}
+	
 }
