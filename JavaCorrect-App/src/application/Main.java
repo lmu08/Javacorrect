@@ -3,7 +3,8 @@ package application;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-
+import application.MysqlConnexion;
+import application.MysqlPropertiesParser;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -17,17 +18,17 @@ extends Application {
 		MysqlPropertiesParser properties = new MysqlPropertiesParser();
 		Connection myqlco = MysqlConnexion.getInstance(properties);
 		
-		System.out.println(properties.getDbname());
-		String insertStudent =
-		"INSERT INTO " + properties.getDbname() + ".CLASSE (intituleClasse) values (?);";
-		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(insertStudent);
-		preparedstatement.setString(1,"L3 DANT");
-		try {
-			preparedstatement.executeUpdate();
-		}
-		catch(Exception e) {
-			System.out.println("Already exists");
-		}
+//		System.out.println(properties.getDbname());
+//		String insertStudent =
+//		"INSERT INTO " + properties.getDbname() + ".CLASSE (intituleClasse) values (?);";
+//		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(insertStudent);
+//		preparedstatement.setString(1,"L3 DANT");
+//		try {
+//			preparedstatement.executeUpdate();
+//		}
+//		catch(Exception e) {
+//			System.out.println("Already exists");
+//		}
 		launch(args);
 	}
 

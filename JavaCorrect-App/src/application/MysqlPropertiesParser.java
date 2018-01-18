@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.sql.Connection;
 import java.util.Properties;
 
 public class MysqlPropertiesParser {
@@ -14,6 +15,8 @@ public class MysqlPropertiesParser {
 	private String host;
 	private String dbname;
 	private String url;
+
+    private static MysqlPropertiesParser INSTANCE = null;
 	
 	public MysqlPropertiesParser(){
 		Properties prop = new Properties();
@@ -69,6 +72,13 @@ public class MysqlPropertiesParser {
 	public String getUrl() {
 		return url;
 	}
+	
+	public static synchronized MysqlPropertiesParser getInstance() throws ClassNotFoundException{
+	    if(INSTANCE == null){
+	      new MysqlPropertiesParser();
+	    }
+	    return INSTANCE;   
+	  }
 
 	
 

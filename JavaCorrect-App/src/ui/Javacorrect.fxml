@@ -5,31 +5,31 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="400.0" minWidth="500.0" prefHeight="400.0" prefWidth="500.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1">
+<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="400.0" minWidth="500.0" prefHeight="400.0" prefWidth="500.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.Controller">
   <tabs>
     <Tab text="Consulter les projets">
          <content>
             <AnchorPane prefHeight="200.0" prefWidth="200.0">
                <children>
-                  <SplitMenuButton layoutX="292.0" layoutY="19.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="194.0" text="Sélection du projet" AnchorPane.rightAnchor="14.0">
+                  <SplitMenuButton fx:id="projectNameButton" layoutX="292.0" layoutY="19.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="194.0" text="Sélection du projet" AnchorPane.rightAnchor="14.0">
                     <items>
                       <MenuItem mnemonicParsing="false" text="Action 1" />
                       <MenuItem mnemonicParsing="false" text="Action 2" />
                     </items>
                   </SplitMenuButton>
-                  <TableView layoutX="6.0" layoutY="94.0" prefHeight="273.0" prefWidth="500.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="94.0">
+                  <TableView fx:id="studentProjectsTable" layoutX="6.0" layoutY="94.0" prefHeight="273.0" prefWidth="500.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="94.0">
                     <columns>
-                      <TableColumn editable="false" prefWidth="171.0" text="Etudiant" />
-                        <TableColumn editable="false" prefWidth="117.0" text="Numéro" />
-                      <TableColumn editable="false" prefWidth="84.0" text="Note" />
-                        <TableColumn editable="false" prefWidth="127.0" text="Date d'envoi" />
+                      <TableColumn fx:id="studentNameColumn" editable="false" prefWidth="171.0" text="Etudiant" />
+                        <TableColumn fx:id="studentIdColumn" editable="false" prefWidth="117.0" text="Numéro" />
+                      <TableColumn fx:id="markColumn" editable="false" prefWidth="84.0" text="Note" />
+                        <TableColumn fx:id="sendDateColumn" editable="false" prefWidth="127.0" text="Date d'envoi" />
                     </columns>
                      <columnResizePolicy>
                         <TableView fx:constant="CONSTRAINED_RESIZE_POLICY" />
                      </columnResizePolicy>
                   </TableView>
                   <Label layoutX="14.0" layoutY="23.0" text="Aucun projet sélectionné" AnchorPane.leftAnchor="14.0" />
-                  <Button layoutX="14.0" layoutY="54.0" mnemonicParsing="false" prefHeight="26.0" prefWidth="105.0" style="-fx-font-weight: bold;" text="Supprimer" textFill="RED" />
+                  <Button layoutX="14.0" layoutY="54.0" mnemonicParsing="false" onAction="#handleDeleteProjectAction" prefHeight="26.0" prefWidth="105.0" style="-fx-font-weight: bold;" text="Supprimer" textFill="RED" />
                </children>
             </AnchorPane>
          </content></Tab>
@@ -51,15 +51,15 @@
                      <center>
                         <AnchorPane prefHeight="367.0" prefWidth="276.0" BorderPane.alignment="CENTER">
                            <children>
-                              <TextField layoutX="27.0" layoutY="75.0" prefHeight="29.0" prefWidth="230.0" AnchorPane.leftAnchor="27.0" AnchorPane.rightAnchor="42.0" />
-                              <DatePicker layoutX="27.0" layoutY="118.0" prefHeight="29.0" prefWidth="230.0" AnchorPane.leftAnchor="27.0" AnchorPane.rightAnchor="42.0" />
-                              <Button layoutX="27.0" layoutY="161.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="230.0" text="Sélectionner un fichier (.txt)" AnchorPane.leftAnchor="27.0" AnchorPane.rightAnchor="42.0" />
-                              <Button layoutX="27.0" layoutY="205.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="230.0" text="Sélectionner un fichier (.csv)" AnchorPane.leftAnchor="27.0" AnchorPane.rightAnchor="42.0" />
+                              <TextField fx:id="projectNameField" layoutX="27.0" layoutY="75.0" prefHeight="29.0" prefWidth="230.0" AnchorPane.leftAnchor="27.0" AnchorPane.rightAnchor="42.0" />
+                              <DatePicker fx:id="deadlineDatePicker" layoutX="27.0" layoutY="118.0" prefHeight="29.0" prefWidth="230.0" AnchorPane.leftAnchor="27.0" AnchorPane.rightAnchor="42.0" />
+                              <Button fx:id="expectedOutputButton" layoutX="27.0" layoutY="161.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="230.0" text="Sélectionner un fichier (.txt)" AnchorPane.leftAnchor="27.0" AnchorPane.rightAnchor="42.0" />
+                              <Button fx:id="studentListButton" layoutX="27.0" layoutY="205.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="230.0" text="Sélectionner un fichier (.csv)" AnchorPane.leftAnchor="27.0" AnchorPane.rightAnchor="42.0" />
                            </children>
                         </AnchorPane>
                      </center>
                      <bottom>
-                        <Button mnemonicParsing="false" prefHeight="38.0" prefWidth="120.0" text="Créer le projet" BorderPane.alignment="BOTTOM_CENTER">
+                        <Button mnemonicParsing="false" onAction="#handleCreateProjectAction" prefHeight="38.0" prefWidth="120.0" text="Créer le projet" BorderPane.alignment="BOTTOM_CENTER">
                            <BorderPane.margin>
                               <Insets bottom="20.0" />
                            </BorderPane.margin>
