@@ -6,7 +6,7 @@ import java.sql.SQLException;
 
 public class MysqlConnexion {
 	private static Connection connect = null;
-
+	
 	public MysqlConnexion(final MysqlPropertiesParser properties)
 	throws ClassNotFoundException {
 		try {
@@ -20,7 +20,7 @@ public class MysqlConnexion {
 			System.out.println("VendorError: " + ex.getErrorCode());
 		}
 	}
-
+	
 	public static synchronized Connection getInstance(final MysqlPropertiesParser properties)
 	throws ClassNotFoundException {
 		if (connect == null) {
