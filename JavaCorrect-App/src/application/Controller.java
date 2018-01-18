@@ -55,21 +55,6 @@ implements Initializable {
 		sendDateColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, Date>("sendDate"));
 		
 		studentProjectsTable.setItems(parseStudentProjectList()); //Populate the table
-
-		expectedOutputButton.setOnMouseClicked((event) -> {
-			final FileChooser fileChooser = new FileChooser();
-			fileChooser.setTitle("Select file");
-			fileChooser.setSelectedExtensionFilter(new ExtensionFilter("Text (.txt)", "*.txt"));
-			final String path = Optional.ofNullable(fileChooser.showOpenDialog(null)).map(File::getPath).orElse("");
-			expectedOutputButton.setText(path);
-		});
-		studentListButton.setOnMouseClicked((event) -> {
-			final FileChooser fileChooser = new FileChooser();
-			fileChooser.setTitle("Select file");
-			fileChooser.setSelectedExtensionFilter(new ExtensionFilter("Comma Separated Values (.csv)", "*.csv"));
-			final String path = Optional.ofNullable(fileChooser.showOpenDialog(null)).map(File::getPath).orElse("");
-			studentListButton.setText(path);
-		});
 	}
 	
 	public static final class StudentProject {
@@ -126,4 +111,23 @@ implements Initializable {
 	private void handleDeleteProjectAction() {
 		//TODO Send delete request to DB + display response
 	}
+
+	@FXML
+	private void handleSelectOutputAction() {
+		final FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Select file");
+		fileChooser.getExtensionFilters().add(new ExtensionFilter("Text (.txt)", "*.txt"));
+		final File file = fileChooser.showOpenDialog(null);
+		Optional.ofNullable(file).map(File::getPath).filter(path -> !path.isEmpty()).ifPresent(expectedOutputButton::setText);
+	}
+
+	@FXML
+	private void handleSelectListAction() {
+		final FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Select file");
+		fileChooser.getExtensionFilters().add(new ExtensionFilter("Comma Separated Values (.csv)", "*.csv"));
+		final File file = fileChooser.showOpenDialog(null);
+		Optional.ofNullable(file).map(File::getPath).filter(path -> !path.isEmpty()).ifPresent(studentListButton::setText);
+	}
+
 }

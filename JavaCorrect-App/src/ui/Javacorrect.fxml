@@ -29,7 +29,7 @@
                      </columnResizePolicy>
                   </TableView>
                   <Label layoutX="14.0" layoutY="23.0" text="Aucun projet sélectionné" AnchorPane.leftAnchor="14.0" />
-                  <Button layoutX="14.0" layoutY="54.0" mnemonicParsing="false" onAction="#handleDeleteProjectAction" prefHeight="26.0" prefWidth="105.0" style="-fx-font-weight: bold;" text="Supprimer" textFill="RED" />
+                  <Button disable="true" layoutX="14.0" layoutY="54.0" mnemonicParsing="false" onAction="#handleDeleteProjectAction" prefHeight="26.0" prefWidth="105.0" style="-fx-font-weight: bold;" text="Supprimer" textFill="RED" />
                </children>
             </AnchorPane>
          </content></Tab>
@@ -53,8 +53,8 @@
                            <children>
                               <TextField fx:id="projectNameField" layoutX="27.0" layoutY="75.0" prefHeight="29.0" prefWidth="230.0" AnchorPane.leftAnchor="27.0" AnchorPane.rightAnchor="42.0" />
                               <DatePicker fx:id="deadlineDatePicker" layoutX="27.0" layoutY="118.0" prefHeight="29.0" prefWidth="230.0" AnchorPane.leftAnchor="27.0" AnchorPane.rightAnchor="42.0" />
-                              <Button fx:id="expectedOutputButton" layoutX="27.0" layoutY="161.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="230.0" text="Sélectionner un fichier (.txt)" AnchorPane.leftAnchor="27.0" AnchorPane.rightAnchor="42.0" />
-                              <Button fx:id="studentListButton" layoutX="27.0" layoutY="205.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="230.0" text="Sélectionner un fichier (.csv)" AnchorPane.leftAnchor="27.0" AnchorPane.rightAnchor="42.0" />
+                              <Button fx:id="expectedOutputButton" layoutX="27.0" layoutY="161.0" mnemonicParsing="false" onAction="#handleSelectOutputAction" prefHeight="30.0" prefWidth="230.0" text="Sélectionner un fichier (.txt)" AnchorPane.leftAnchor="27.0" AnchorPane.rightAnchor="42.0" />
+                              <Button fx:id="studentListButton" layoutX="27.0" layoutY="205.0" mnemonicParsing="false" onAction="#handleSelectListAction" prefHeight="30.0" prefWidth="230.0" text="Sélectionner un fichier (.csv)" AnchorPane.leftAnchor="27.0" AnchorPane.rightAnchor="42.0" />
                            </children>
                         </AnchorPane>
                      </center>
