@@ -13,7 +13,7 @@ public class LoginController {
 	private TextField usernameTextField;
 	@FXML
 	private PasswordField passwordField;
-	private boolean loginOK = false;
+	private String login;
 	private Stage stage;
 	
 	public void initialize() {
@@ -30,7 +30,7 @@ public class LoginController {
 		final String password = passwordField.getText();
 		//TODO check in DB if ok
 		if (password.equals("password") && username.equals("login")) {
-			loginOK = true;
+			login = username;
 			stage.hide();
 		} else {
 			final Alert alert = new Alert(AlertType.ERROR);
@@ -42,8 +42,8 @@ public class LoginController {
 		}
 	}
 
-	public boolean loginOK() {
-		return loginOK;
+	public String getLogin() {
+		return login;
 	}
 
 }

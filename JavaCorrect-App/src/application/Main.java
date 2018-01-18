@@ -8,6 +8,7 @@ import javafx.stage.Stage;
 
 public class Main
 extends Application {
+	private static String userLogin;
 	
 	public static void main(final String[] args) {
 		Application.launch(args);
@@ -24,7 +25,7 @@ extends Application {
 			final LoginController loginController = (LoginController) loader.getController();
 			loginController.setStage(stage);
 			stage.showAndWait();
-			if (loginController.loginOK()) {
+			if (!(userLogin = loginController.getLogin()).isEmpty()) {
 				final Parent parent = FXMLLoader.load(getClass().getResource("/ui/Javacorrect.fxml"));
 				primaryStage.setScene(new Scene(parent));
 				primaryStage.show();
@@ -32,5 +33,9 @@ extends Application {
 		} catch (final NullPointerException e) {
 			System.err.println("The application failed to load (resource not found). Error :\n" + e);
 		}
+	}
+	
+	public static String getUserLogin() {
+		return userLogin;
 	}
 }
