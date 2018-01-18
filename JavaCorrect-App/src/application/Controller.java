@@ -5,7 +5,9 @@ import java.net.URL;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.UUID;
@@ -18,8 +20,8 @@ import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
-import javafx.scene.control.SplitMenuButton;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -30,15 +32,9 @@ import javafx.stage.FileChooser.ExtensionFilter;
 public class Controller
 implements Initializable {
 	@FXML
-	private TextField projectNameField;
+	private ComboBox<String> projectNameButton;
 	@FXML
-	private DatePicker deadlineDatePicker;
-	@FXML
-	private Button expectedOutputButton;
-	@FXML
-	private Button studentListButton;
-	@FXML
-	private SplitMenuButton projectNameButton;
+	private Button deleteProjectButton;
 	@FXML
 	private TableView<StudentProject> studentProjectsTable;
 	@FXML
@@ -49,30 +45,35 @@ implements Initializable {
 	private TableColumn<StudentProject, Integer> markColumn;
 	@FXML
 	private TableColumn<StudentProject, Date> sendDateColumn;
+	@FXML
+	private TextField projectNameField;
+	@FXML
+	private DatePicker deadlineDatePicker;
+	@FXML
+	private Button expectedOutputButton;
+	@FXML
+	private Button studentListButton;
+	@FXML
+	private Button createProjectButton;
 	
 	@Override
 	public void initialize(final URL url, final ResourceBundle resourceBundle) {
+		projectNameButton.setItems(FXCollections.observableList(queryProjectNames()));
+		projectNameButton.setOnAction(event -> updateTable());
+		
 		studentNameColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, String>("name"));
 		studentIdColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, String>("studentId"));
 		markColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, Integer>("mark"));
 		sendDateColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, Date>("sendDate"));
 		
-		studentProjectsTable.setItems(parseStudentProjectList()); //Populate the table
-
-		expectedOutputButton.setOnMouseClicked((event) -> {
-			final FileChooser fileChooser = new FileChooser();
-			fileChooser.setTitle("Select file");
-			fileChooser.setSelectedExtensionFilter(new ExtensionFilter("Text (.txt)", "*.txt"));
-			final String path = Optional.ofNullable(fileChooser.showOpenDialog(null)).map(File::getPath).orElse("");
-			expectedOutputButton.setText(path);
-		});
-		studentListButton.setOnMouseClicked((event) -> {
-			final FileChooser fileChooser = new FileChooser();
-			fileChooser.setTitle("Select file");
-			fileChooser.setSelectedExtensionFilter(new ExtensionFilter("Comma Separated Values (.csv)", "*.csv"));
-			final String path = Optional.ofNullable(fileChooser.showOpenDialog(null)).map(File::getPath).orElse("");
-			studentListButton.setText(path);
-		});
+		projectNameField.textProperty().addListener(event -> updateControls());
+		deadlineDatePicker.setEditable(false);
+		deadlineDatePicker.setOnAction(event -> updateControls());
+	}
+	
+	public List<String> queryProjectNames() {
+		//TODO get project names from database. IDs can be retrieved too, and added to MenuItem.userData if needed.
+		return Arrays.asList("Projet 1", "Projet 2", "Projet 3");
 	}
 	
 	public static final class StudentProject {
@@ -105,24 +106,57 @@ implements Initializable {
 		}
 	}
 
-	private ObservableList<StudentProject> parseStudentProjectList() {
-		//TODO Get students from DB and create the list
-		return FXCollections.emptyObservableList();
-		
-		// Sample :
-		//		return FXCollections.observableArrayList(
-		//			new StudentProject("Jean DUPONT", "985656", null, null),
-		//			new StudentProject("Paul SMITH", "765654", 16, new Date())
-		//		);
+	private void updateTable() {
+		studentProjectsTable.setItems(parseStudentProjectList());
+		deleteProjectButton.setDisable(false);
 	}
 
+	private ObservableList<StudentProject> parseStudentProjectList() {
+		//TODO Get selected project and logged user + get students from DB + create the list
+		
+		// Sample :
+		return FXCollections.observableArrayList(
+			new StudentProject("Jean DUPONT", "985656", null, null),
+			new StudentProject("Paul SMITH", "765654", 16, new Date()));
+	}
+
+	@FXML
+	private void handleDeleteProjectAction() {
+		//TODO Send delete request to DB + display response
+	}
+
+	@FXML
+	private void handleSelectOutputAction() {
+		final FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Select file");
+		fileChooser.getExtensionFilters().add(new ExtensionFilter("Text (.txt)", "*.txt"));
+		final File file = fileChooser.showOpenDialog(null);
+		Optional.ofNullable(file).map(File::getPath).filter(path -> !path.isEmpty()).ifPresent(path -> {
+			expectedOutputButton.setUserData(path);
+			expectedOutputButton.setText(path);
+		});
+	}
+
+	@FXML
+	private void handleSelectListAction() {
+		final FileChooser fileChooser = new FileChooser();
+		fileChooser.setTitle("Select file");
+		fileChooser.getExtensionFilters().add(new ExtensionFilter("Comma Separated Values (.csv)", "*.csv"));
+		final File file = fileChooser.showOpenDialog(null);
+		Optional.ofNullable(file).map(File::getPath).filter(path -> !path.isEmpty()).ifPresent(path -> {
+			studentListButton.setUserData(path);
+			studentListButton.setText(path);
+		});
+		updateControls();
+	}
+	
 	@FXML
 	private void handleCreateProjectAction() throws ClassNotFoundException {
 		final String projectName = projectNameField.getText();
 		final LocalDate deadline = deadlineDatePicker.getValue();
-		final String expectedOutputPath = expectedOutputButton.getText();
-		final String studentListPath = studentListButton.getText();
-		String dateExpi = deadline.getYear()+"-"+deadline.getMonth()+"-"+deadline.getDayOfMonth();
+		final String expectedOutputPath = (String) expectedOutputButton.getUserData();
+		final String studentListPath = (String) studentListButton.getUserData();
+    String dateExpi = deadline.getYear()+"-"+deadline.getMonth()+"-"+deadline.getDayOfMonth();
 		final String projectId = UUID.randomUUID()+"";
 		//TODO Parse files + send data to DB + display response
 		try {
@@ -148,9 +182,9 @@ implements Initializable {
 		    System.out.println("VendorError: " + ex.getErrorCode());
 		}
 	}
-	
-	@FXML
-	private void handleDeleteProjectAction() {
-		//TODO Send delete request to DB + display response
+
+	private void updateControls() {
+		createProjectButton.setDisable(projectNameField.getText().isEmpty() || deadlineDatePicker.getValue() == null || (String) studentListButton.getUserData() == null);
 	}
+
 }
