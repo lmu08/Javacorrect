@@ -10,6 +10,7 @@ import application.MysqlConnexion;
 import application.MysqlPropertiesParser;
 import application.MysqlRequest;
 import application.StudentCsvParser;
+
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -33,10 +34,9 @@ extends Application {
 //			e.printStackTrace();
 //			
     //		}
-    
-		Application.launch(args);
+     Application.launch(args);
 	}
-	
+
 	@Override
 	public void start(final Stage primaryStage)
 	throws Exception {
@@ -57,7 +57,7 @@ extends Application {
 			System.err.println("The application failed to load (resource not found). Error :\n" + e);
 		}
 	}
-	
+
 	public static String getUserLogin() {
 		return userLogin;
 	}
