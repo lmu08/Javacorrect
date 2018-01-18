@@ -11,12 +11,7 @@
          <content>
             <AnchorPane prefHeight="200.0" prefWidth="200.0">
                <children>
-                  <SplitMenuButton fx:id="projectNameButton" layoutX="292.0" layoutY="19.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="194.0" text="Sélection du projet" AnchorPane.rightAnchor="14.0">
-                    <items>
-                      <MenuItem mnemonicParsing="false" text="Action 1" />
-                      <MenuItem mnemonicParsing="false" text="Action 2" />
-                    </items>
-                  </SplitMenuButton>
+                  <ComboBox fx:id="projectNameButton" layoutX="308.0" layoutY="18.0" prefHeight="25.0" prefWidth="178.0" promptText="Sélection du projet" />
                   <TableView fx:id="studentProjectsTable" layoutX="6.0" layoutY="94.0" prefHeight="273.0" prefWidth="500.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="94.0">
                     <columns>
                       <TableColumn fx:id="studentNameColumn" editable="false" prefWidth="171.0" text="Etudiant" />
@@ -29,7 +24,7 @@
                      </columnResizePolicy>
                   </TableView>
                   <Label layoutX="14.0" layoutY="23.0" text="Aucun projet sélectionné" AnchorPane.leftAnchor="14.0" />
-                  <Button layoutX="14.0" layoutY="54.0" mnemonicParsing="false" onAction="#handleDeleteProjectAction" prefHeight="26.0" prefWidth="105.0" style="-fx-font-weight: bold;" text="Supprimer" textFill="RED" />
+                  <Button fx:id="deleteProjectButton" disable="true" layoutX="14.0" layoutY="54.0" mnemonicParsing="false" onAction="#handleDeleteProjectAction" prefHeight="26.0" prefWidth="105.0" style="-fx-font-weight: bold;" text="Supprimer" textFill="RED" />
                </children>
             </AnchorPane>
          </content></Tab>
@@ -41,10 +36,10 @@
                      <left>
                         <AnchorPane prefHeight="309.0" prefWidth="209.0" BorderPane.alignment="CENTER">
                            <children>
-                              <Label layoutX="94.0" layoutY="83.0" text="Nom du projet" AnchorPane.rightAnchor="13.0" />
-                              <Label layoutX="46.0" layoutY="126.0" prefHeight="17.0" prefWidth="142.0" text="Date limite de remise" AnchorPane.rightAnchor="13.0" />
-                              <Label layoutX="14.0" layoutY="169.0" text="Sortie attendue (facultatif)" AnchorPane.rightAnchor="13.0" />
-                              <Label layoutX="64.0" layoutY="212.0" text="Liste des étudiants" AnchorPane.rightAnchor="13.0" />
+                              <Label layoutX="109.0" layoutY="83.0" text="Nom du projet" AnchorPane.rightAnchor="6.0" />
+                              <Label layoutX="61.0" layoutY="126.0" prefHeight="17.0" prefWidth="142.0" text="Date limite de remise" AnchorPane.rightAnchor="6.0" />
+                              <Label layoutX="29.0" layoutY="169.0" text="Sortie attendue (facultatif)" AnchorPane.rightAnchor="6.0" />
+                              <Label layoutX="79.0" layoutY="212.0" text="Liste des étudiants" AnchorPane.rightAnchor="6.0" />
                            </children>
                         </AnchorPane>
                      </left>
@@ -53,13 +48,13 @@
                            <children>
                               <TextField fx:id="projectNameField" layoutX="27.0" layoutY="75.0" prefHeight="29.0" prefWidth="230.0" AnchorPane.leftAnchor="27.0" AnchorPane.rightAnchor="42.0" />
                               <DatePicker fx:id="deadlineDatePicker" layoutX="27.0" layoutY="118.0" prefHeight="29.0" prefWidth="230.0" AnchorPane.leftAnchor="27.0" AnchorPane.rightAnchor="42.0" />
-                              <Button fx:id="expectedOutputButton" layoutX="27.0" layoutY="161.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="230.0" text="Sélectionner un fichier (.txt)" AnchorPane.leftAnchor="27.0" AnchorPane.rightAnchor="42.0" />
-                              <Button fx:id="studentListButton" layoutX="27.0" layoutY="205.0" mnemonicParsing="false" prefHeight="30.0" prefWidth="230.0" text="Sélectionner un fichier (.csv)" AnchorPane.leftAnchor="27.0" AnchorPane.rightAnchor="42.0" />
+                              <Button fx:id="expectedOutputButton" layoutX="27.0" layoutY="161.0" mnemonicParsing="false" onAction="#handleSelectOutputAction" prefHeight="30.0" prefWidth="230.0" text="Sélectionner un fichier (.txt)" AnchorPane.leftAnchor="27.0" AnchorPane.rightAnchor="42.0" />
+                              <Button fx:id="studentListButton" layoutX="27.0" layoutY="205.0" mnemonicParsing="false" onAction="#handleSelectListAction" prefHeight="30.0" prefWidth="230.0" text="Sélectionner un fichier (.csv)" AnchorPane.leftAnchor="27.0" AnchorPane.rightAnchor="42.0" />
                            </children>
                         </AnchorPane>
                      </center>
                      <bottom>
-                        <Button mnemonicParsing="false" onAction="#handleCreateProjectAction" prefHeight="38.0" prefWidth="120.0" text="Créer le projet" BorderPane.alignment="BOTTOM_CENTER">
+                        <Button fx:id="createProjectButton" disable="true" mnemonicParsing="false" onAction="#handleCreateProjectAction" prefHeight="38.0" prefWidth="120.0" text="Créer le projet" BorderPane.alignment="BOTTOM_CENTER">
                            <BorderPane.margin>
                               <Insets bottom="20.0" />
                            </BorderPane.margin>

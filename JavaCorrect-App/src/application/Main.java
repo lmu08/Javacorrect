@@ -18,14 +18,11 @@ import javafx.stage.Stage;
 
 public class Main
 extends Application {
-
+	private static String userLogin;
+	
 	public static void main(final String[] args) {
-//		MysqlPropertiesParser properties = new MysqlPropertiesParser();
-//		try {
-//			Connection myqlco = MysqlConnexion.getInstance(properties);
-//			LocalDate today = LocalDate.now();
-//			String projectId = UUID.randomUUID()+"";
-//			MysqlRequest.insertProject(myqlco, projectId ,today, "toto" );
+//    MysqlPropertiesParser properties = new MysqlPropertiesParser();
+//		Connection myqlco = MysqlConnexion.getInstance(properties);
 //			MysqlRequest.getProject(myqlco, projectId);
 ////			new StudentCsvParser("/home/flo/Documents/JavaCorrect/Javacorrect/studentTest.csv");
 //			MysqlRequest.insertEvaluation(myqlco, projectId, 1, 3514665, 1);
@@ -35,27 +32,33 @@ extends Application {
 //			// TODO Auto-generated catch block
 //			e.printStackTrace();
 //			
-//		}
-		
-		launch(args);
+    //		}
+    
+		Application.launch(args);
 	}
-
+	
 	@Override
-	public void start(final Stage stage)
+	public void start(final Stage primaryStage)
 	throws Exception {
 		try {
-			final Parent root = FXMLLoader.load(getClass().getResource("/ui/Javacorrect.fxml"));
-
+			final FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/Login.fxml"));
+			final Stage stage = new Stage();
 			stage.setTitle("Javacorrect");
-			stage.setScene(new Scene(root));
-			stage.show();
+			stage.setScene(new Scene(loader.load()));
+			final LoginController loginController = (LoginController) loader.getController();
+			loginController.setStage(stage);
+			stage.showAndWait();
+			if (!(userLogin = loginController.getLogin()).isEmpty()) {
+				final Parent parent = FXMLLoader.load(getClass().getResource("/ui/Javacorrect.fxml"));
+				primaryStage.setScene(new Scene(parent));
+				primaryStage.show();
+			}
 		} catch (final NullPointerException e) {
 			System.err.println("The application failed to load (resource not found). Error :\n" + e);
 		}
-
-		//		How to access the controller :
-		//		final FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/Javacorrect.fxml"));
-		//		stage.setScene(new Scene(loader.load()));
-		//		final Controller controller = loader.getController();
+	}
+	
+	public static String getUserLogin() {
+		return userLogin;
 	}
 }
