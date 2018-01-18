@@ -14,15 +14,15 @@ public class MysqlPropertiesParser {
 	private String host;
 	private String dbname;
 	private String url;
-	
-	private static MysqlPropertiesParser INSTANCE = null;
 
+	private static MysqlPropertiesParser INSTANCE = null;
+	
 	public MysqlPropertiesParser() {
 		final Properties prop = new Properties();
 		InputStream input;
 		try {
 			final File file = new File("resources/db.properties");
-
+			
 			input = new FileInputStream(file);
 			prop.load(input);
 			this.user = prop.getProperty("USER");
@@ -36,35 +36,35 @@ public class MysqlPropertiesParser {
 			ex.printStackTrace();
 		}
 	}
-	
+
 	public String getPassword() {
 		return password;
 	}
-	
+
 	public String getUser() {
 		return user;
 	}
-	
+
 	public String getJdbcDriver() {
 		return jdbcDriver;
 	}
-	
+
 	public String getHost() {
 		return host;
 	}
-	
+
 	public String getPort() {
 		return port;
 	}
-	
+
 	public String getDbname() {
 		return dbname;
 	}
-	
+
 	public String getUrl() {
 		return url;
 	}
-
+	
 	public static synchronized MysqlPropertiesParser getInstance()
 	throws ClassNotFoundException {
 		if (INSTANCE == null) {
@@ -72,5 +72,5 @@ public class MysqlPropertiesParser {
 		}
 		return INSTANCE;
 	}
-	
+
 }

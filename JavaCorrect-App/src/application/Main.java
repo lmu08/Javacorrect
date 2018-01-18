@@ -1,7 +1,5 @@
 package application;
 
-import java.sql.Connection;
-
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -11,24 +9,20 @@ import javafx.stage.Stage;
 public class Main
 extends Application {
 	private static String userLogin;
-
-	public static void main(final String[] args)
-	throws ClassNotFoundException {
-		final MysqlPropertiesParser properties = new MysqlPropertiesParser();
-		final Connection myqlco = MysqlConnexion.getInstance(properties);
-		
-		//		System.out.println(properties.getDbname());
-		//		String insertStudent =
-		//		"INSERT INTO " + properties.getDbname() + ".CLASSE (intituleClasse) values (?);";
-		//		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(insertStudent);
-		//		preparedstatement.setString(1,"L3 DANT");
-		//		try {
-		//			preparedstatement.executeUpdate();
+	
+	public static void main(final String[] args) {
+		//    MysqlPropertiesParser properties = new MysqlPropertiesParser();
+		//		Connection myqlco = MysqlConnexion.getInstance(properties);
+		//			MysqlRequest.getProject(myqlco, projectId);
+		////			new StudentCsvParser("/home/flo/Documents/JavaCorrect/Javacorrect/studentTest.csv");
+		//			MysqlRequest.insertEvaluation(myqlco, projectId, 1, 3514665, 1);
+		//			MysqlRequest.updateNoteToEvaluation(myqlco, 10.5, projectId, 1, 3514665, 1);
+		//
+		//		} catch (Exception e) {
+		//			// TODO Auto-generated catch block
+		//			e.printStackTrace();
+		//
 		//		}
-		//		catch(Exception e) {
-		//			System.out.println("Already exists");
-		//		}
-		
 		Application.launch(args);
 	}
 
