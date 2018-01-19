@@ -1,4 +1,4 @@
-package application;
+package controller;
 
 import java.io.File;
 import java.net.URL;
@@ -17,9 +17,13 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -27,8 +31,10 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 
-public class Controller
+public class MainViewController
 implements Initializable {
+	@FXML
+	private MenuItem logoutContextMenu;
 	@FXML
 	private ComboBox<String> projectNameButton;
 	@FXML
@@ -53,6 +59,7 @@ implements Initializable {
 	private Button studentListButton;
 	@FXML
 	private Button createProjectButton;
+	private String currentUser;
 	
 	@Override
 	public void initialize(final URL url, final ResourceBundle resourceBundle) {
@@ -67,6 +74,16 @@ implements Initializable {
 		projectNameField.textProperty().addListener(event -> updateControls());
 		deadlineDatePicker.setEditable(false);
 		deadlineDatePicker.setOnAction(event -> updateControls());
+	}
+
+	public void initUser(final LoginManager loginManager, final String login) {
+		currentUser = login;
+		logoutContextMenu.setOnAction(event -> {
+			final Alert alert = new Alert(AlertType.CONFIRMATION);
+			alert.setTitle("Logout");
+			alert.setContentText("Are you sure you want to logout ?");
+			alert.showAndWait().filter(ButtonType.OK::equals).ifPresent(button -> loginManager.showLoginView());
+		});
 	}
 	
 	public List<String> queryProjectNames() {
@@ -163,5 +180,4 @@ implements Initializable {
 	private void updateControls() {
 		createProjectButton.setDisable(projectNameField.getText().isEmpty() || deadlineDatePicker.getValue() == null || (String) studentListButton.getUserData() == null);
 	}
-
 }
