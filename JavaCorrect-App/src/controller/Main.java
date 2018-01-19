@@ -7,7 +7,7 @@ import javafx.stage.Stage;
 
 public class Main
 extends Application {
-	
+
 	public static void main(final String[] args) {
 		//    MysqlPropertiesParser properties = new MysqlPropertiesParser();
 		//		Connection myqlco = MysqlConnexion.getInstance(properties);
@@ -23,14 +23,14 @@ extends Application {
 		//		}
 		Application.launch(args);
 	}
-
+	
 	@Override
 	public void start(final Stage primaryStage) {
 		primaryStage.setTitle("Javacorrect");
 		primaryStage.setScene(new Scene(new Pane()));
 		primaryStage.show();
-		
-		final LoginManager loginManager = new LoginManager(primaryStage);
-		loginManager.showLoginView();
+
+		final WindowManager windowManager = new WindowManager(primaryStage);
+		windowManager.showLoginView();
 	}
 }

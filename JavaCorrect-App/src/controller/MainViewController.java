@@ -71,22 +71,22 @@ implements Initializable {
 		markColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, Integer>("mark"));
 		sendDateColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, Date>("sendDate"));
 		
-		projectNameField.textProperty().addListener(event -> updateControls());
+		projectNameField.textProperty().addListener(event -> updateCreateProjectButton());
 		deadlineDatePicker.setEditable(false);
-		deadlineDatePicker.setOnAction(event -> updateControls());
+		deadlineDatePicker.setOnAction(event -> updateCreateProjectButton());
 	}
 
-	public void initUser(final LoginManager loginManager, final String login) {
+	public void initUser(final WindowManager windowManager, final String login) {
 		currentUser = login;
 		logoutContextMenu.setOnAction(event -> {
 			final Alert alert = new Alert(AlertType.CONFIRMATION);
 			alert.setTitle("Logout");
 			alert.setContentText("Are you sure you want to logout ?");
-			alert.showAndWait().filter(ButtonType.OK::equals).ifPresent(button -> loginManager.showLoginView());
+			alert.showAndWait().filter(ButtonType.OK::equals).ifPresent(button -> windowManager.showLoginView());
 		});
 	}
 	
-	public List<String> queryProjectNames() {
+	private List<String> queryProjectNames() {
 		//TODO get project names from database. IDs can be retrieved too, and added to MenuItem.userData if needed.
 		return Arrays.asList("Projet 1", "Projet 2", "Projet 3");
 	}
@@ -162,12 +162,11 @@ implements Initializable {
 			studentListButton.setUserData(path);
 			studentListButton.setText(path);
 		});
-		updateControls();
+		updateCreateProjectButton();
 	}
 	
 	@FXML
-	private void handleCreateProjectAction()
-	throws ClassNotFoundException {
+	private void handleCreateProjectAction() {
 		final String projectName = projectNameField.getText();
 		final LocalDate deadline = deadlineDatePicker.getValue();
 		final String expectedOutputPath = (String) expectedOutputButton.getUserData();
@@ -177,7 +176,7 @@ implements Initializable {
 		//TODO Parse files + send data to DB + display response
 	}
 
-	private void updateControls() {
+	private void updateCreateProjectButton() {
 		createProjectButton.setDisable(projectNameField.getText().isEmpty() || deadlineDatePicker.getValue() == null || (String) studentListButton.getUserData() == null);
 	}
 }
