@@ -1,6 +1,8 @@
 package application;
 
 import java.math.BigDecimal;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -33,6 +35,15 @@ public class MysqlRequest {
 		return preparedstatement.executeQuery();
 	}
 	
+	public static ResultSet getProfesseurByLogin(Connection myqlco, String login) throws SQLException {
+		String getProfByIdQuery = "SELECT * "
+				+ "FROM PROFESSEUR "
+				+ "WHERE loginProfesseur = ? ; ";
+		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(getProfByIdQuery);
+		preparedstatement.setString(1, login);
+		return preparedstatement.executeQuery();
+	}
+	
 	public static ResultSet getProject(Connection myqlco, String idProjet) throws SQLException {
 		String getProjectRs = "select * " +
 				"FROM PROJET " + 
@@ -59,15 +70,24 @@ public class MysqlRequest {
 	}
 
 	public static int insertStudent(Connection myqlco, int numEtu, String nomEtu, String prenomEtu,int  idPromotion) throws SQLException {
-		String insertRequest = "INSERT INTO ETUDIANT " +
-				"(numEtu, nomEtu, prenomEtu, PROMOTION_idPromotion) VALUES "
-				+ "(?, ?, ?, ?);";
-		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(insertRequest);
-		preparedstatement.setInt(1, numEtu);
-		preparedstatement.setString(2, nomEtu);
-		preparedstatement.setString(3, prenomEtu);
-		preparedstatement.setInt(4, idPromotion);
-		return preparedstatement.executeUpdate();
+		int res;
+		ResultSet rs = getStudentByNum(myqlco, numEtu);
+		if(rs.isBeforeFirst()) {
+			res = updateStudent(myqlco, numEtu, nomEtu, prenomEtu, idPromotion);
+		}
+		else {
+			String insertRequest = "INSERT INTO ETUDIANT " +
+					"(numEtu, nomEtu, prenomEtu, PROMOTION_idPromotion) VALUES "
+					+ "(?, ?, ?, ?);";
+			java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(insertRequest);
+			preparedstatement.setInt(1, numEtu);
+			preparedstatement.setString(2, nomEtu);
+			preparedstatement.setString(3, prenomEtu);
+			preparedstatement.setInt(4, idPromotion);
+			res = preparedstatement.executeUpdate();
+		}
+		return res;
+		
 	}
 
 	public static int insertProject(Connection myqlco,String projectId ,LocalDate dateExpi, String projectName) throws SQLException {
@@ -81,39 +101,85 @@ public class MysqlRequest {
 		preparedstatement.setString(1,projectId);
 		preparedstatement.setDate(2, java.sql.Date.valueOf(dateExpiString));
 		preparedstatement.setString(3, projectName);
-		
 		return preparedstatement.executeUpdate();
 		
 	}
 	
-	public static int insertEvaluation(Connection myqlco, String projectId, int profId, int numEtu, int idPromo) throws SQLException {
+	public static int insertEvaluation(Connection myqlco, String projectId, String loginProf, int numEtu, int idPromo) throws SQLException {
 		String insertEval =
 		"INSERT INTO EVALUATION "
-		+ "(PROJET_idProjet, ETUDIANT_numEtu, ETUDIANT_Promotion_idPromotion, PROFESSEUR_idProfesseur ) " + 
+		+ "(PROJET_idProjet, ETUDIANT_numEtu, ETUDIANT_Promotion_idPromotion, PROFESSEUR_loginProfesseur ) " + 
 		"VALUES (?, ?, ?, ?);";
 		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(insertEval);
 		preparedstatement.setString(1,projectId);
 		preparedstatement.setInt(2, numEtu);
 		preparedstatement.setInt(3, idPromo);
-		preparedstatement.setInt(4, profId);
+		preparedstatement.setString(4, loginProf);
 		
 		return preparedstatement.executeUpdate();
 	}
 	
-	public static int updateNoteToEvaluation(Connection myqlco, double note, String projectId, int profId, int numEtu, int idPromo) throws SQLException {
+	public static int updateNoteToEvaluation(Connection myqlco, double note, String projectId, String loginprof, int numEtu, int idPromo) throws SQLException {
 		String addNoteToEval =
 		"UPDATE EVALUATION "
 		+ "SET EVALUATION_note= ?"
 		+ "WHERE PROJET_idProjet= ? and"
 		+ " ETUDIANT_numEtu = ? and "
 		+ " ETUDIANT_Promotion_idPromotion = ? and"
-		+ " PROFESSEUR_idProfesseur = ?";
+		+ " PROFESSEUR_loginProfesseur = ?;";
 		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(addNoteToEval);
 		preparedstatement.setBigDecimal(1,BigDecimal.valueOf(note));
 		preparedstatement.setString(2,projectId );
 		preparedstatement.setInt(3, numEtu);
 		preparedstatement.setInt(4, idPromo);
-		preparedstatement.setInt(5, profId);
+		preparedstatement.setString(5, loginprof);
+		return preparedstatement.executeUpdate();
+	}
+	
+	public static int insertProfesseur(Connection myqlco,String login,String mailProfesseur, String password) throws SQLException, NoSuchAlgorithmException {
+		ResultSet rs = getProfesseurByLogin(myqlco, login);
+		if(rs.isBeforeFirst()) {
+			updateProfesseur(myqlco, login,mailProfesseur,password);
+		}else{
+			String encryptedPassword = ToolsMethods.clearTextToEncrypted(password, "SHA-256");
+			String insertProf =
+					"INSERT INTO PROFESSEUR "
+					+ "(loginProfesseur, mailProfesseur, passwdProfesseur) "
+					+ "VALUES (?, ?, ?);";
+			java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(insertProf);
+			preparedstatement.setString(1, login.toLowerCase());
+			preparedstatement.setString(2, mailProfesseur);
+			preparedstatement.setString(3, encryptedPassword);
+			return preparedstatement.executeUpdate();
+		}
+		return -1;
+		
+	}
+	
+	
+	private static int updateProfesseur(Connection myqlco, String login, String mailProfesseur, String password) throws SQLException {
+		String encryptedPassword = ToolsMethods.clearTextToEncrypted(password, "SHA-256");
+		String insertProf =
+				"UPDATE PROFESSEUR "
+				+ "SET mailProfesseur = ? , passwdProfesseur = ? "
+				+ "WHERE loginProfesseur = ?";
+		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(insertProf);
+		preparedstatement.setString(1, mailProfesseur);
+		preparedstatement.setString(2, encryptedPassword);
+		preparedstatement.setString(3, login.toLowerCase());
+		return preparedstatement.executeUpdate();
+		
+	}
+
+	public static int updateStudent(Connection myqlco, int numEtu, String nomEtu, String prenomEtu,int  idPromotion) throws SQLException {
+		String updatetRequest = "UPDATE ETUDIANT " +
+				"SET nomEtu = ?, prenomEtu = ?, PROMOTION_idPromotion = ?"
+				+ "WHERE numEtu= ? ;";
+		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(updatetRequest);
+		preparedstatement.setString(1, nomEtu);
+		preparedstatement.setString(2, prenomEtu);
+		preparedstatement.setInt(3, idPromotion);
+		preparedstatement.setInt(4, numEtu);
 		return preparedstatement.executeUpdate();
 	}
 	

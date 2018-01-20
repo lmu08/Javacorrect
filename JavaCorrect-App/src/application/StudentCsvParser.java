@@ -83,6 +83,7 @@ public class StudentCsvParser {
 								System.out.println('s');
 								MysqlRequest.insertPromotion(this.mysqlco, this.classYear, idClasse);
 							}
+							rspromo = MysqlRequest.getIdPromotionRequest(this.mysqlco, this.classYear, this.className);
 							rspromo.next();
 							this.idPromotion = rspromo.getInt("idPromotion");
 							this.promotionChecked = true;
@@ -100,6 +101,7 @@ public class StudentCsvParser {
 						System.out.println("SQLState: " + ex.getSQLState());
 						System.out.println("SQLState: " + ex.toString());
 						System.out.println("VendorError: " + ex.getErrorCode());
+						System.out.println(this.idPromotion);
 					}
 				} 
 
