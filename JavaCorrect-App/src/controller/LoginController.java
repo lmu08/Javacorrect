@@ -1,37 +1,40 @@
-package application;
+package controller;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import controller.WindowManager;
+import db.MysqlConnexion;
+import db.MysqlPropertiesParser;
+import db.MysqlRequest;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
+import tools.EncryptingTools;
+import javafx.scene.control.Hyperlink;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.stage.Stage;
 
 public class LoginController {
 	@FXML
 	private TextField usernameTextField;
 	@FXML
 	private PasswordField passwordField;
-	private String login;
-	private Stage stage;
+	@FXML
+	private Hyperlink createAccountLink;
 	private MysqlPropertiesParser properties;
+	private WindowManager windowManager;
 	private Connection mysqlco;
 	
 	public LoginController() throws ClassNotFoundException{
 		this.properties = MysqlPropertiesParser.getInstance();
 		this.mysqlco = MysqlConnexion.getInstance(this.properties);
 	}
-	public void initialize() {
-		// Mandatory initialize method
-	}
-	
-	public void setStage(final Stage stage) {
-		this.stage = stage;
+
+	public void initManager(final WindowManager windowManager) {
+		this.windowManager = windowManager;
 	}
 
 	@FXML
@@ -52,26 +55,16 @@ public class LoginController {
 			rs.next();
 			String loginDb = rs.getString("loginProfesseur");
 			String passwordDb = rs.getString("passwdProfesseur");
-			String encryptedPassword = ToolsMethods.clearTextToEncrypted(password, "SHA-256");
+			String encryptedPassword = EncryptingTools.clearTextToEncrypted(password, "SHA-256");
 			
 			if (passwordDb.equals(encryptedPassword) && username.equals(loginDb)) {
-				login = username;
-				stage.hide();
+				windowManager.showMainView(username);
 			} else {
 				failed = true;
 				errorMessage = "Mot de passe incorrect";
 			}
 		}
-		if(!failed) {
-			login = username;try {
-				Connection myqlco = MysqlConnexion.getInstance(properties);
-			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			stage.hide();
-		}
-		else {
+		if(failed) {
 			
 			final Alert alert = new Alert(AlertType.ERROR);
 			alert.setHeaderText("L'authentification a échoué");
@@ -83,9 +76,10 @@ public class LoginController {
 		
 		
 	}
-
-	public String getLogin() {
-		return login;
+	
+	@FXML
+	private void handleOpenCreateAccountAction() {
+		windowManager.showRegisterView();
 	}
 
 }

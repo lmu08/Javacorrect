@@ -1,9 +1,7 @@
-package application;
+package controller;
 
 import java.io.File;
 import java.net.URL;
-import java.sql.Connection;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Date;
@@ -19,9 +17,13 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.DatePicker;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextField;
@@ -29,8 +31,10 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 
-public class Controller
+public class MainViewController
 implements Initializable {
+	@FXML
+	private MenuItem logoutContextMenu;
 	@FXML
 	private ComboBox<String> projectNameButton;
 	@FXML
@@ -55,6 +59,7 @@ implements Initializable {
 	private Button studentListButton;
 	@FXML
 	private Button createProjectButton;
+	private String currentUser;
 	
 	@Override
 	public void initialize(final URL url, final ResourceBundle resourceBundle) {
@@ -66,12 +71,22 @@ implements Initializable {
 		markColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, Integer>("mark"));
 		sendDateColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, Date>("sendDate"));
 		
-		projectNameField.textProperty().addListener(event -> updateControls());
+		projectNameField.textProperty().addListener(event -> updateCreateProjectButton());
 		deadlineDatePicker.setEditable(false);
-		deadlineDatePicker.setOnAction(event -> updateControls());
+		deadlineDatePicker.setOnAction(event -> updateCreateProjectButton());
+	}
+
+	public void initUser(final WindowManager windowManager, final String login) {
+		currentUser = login;
+		logoutContextMenu.setOnAction(event -> {
+			final Alert alert = new Alert(AlertType.CONFIRMATION);
+			alert.setTitle("Logout");
+			alert.setContentText("Are you sure you want to logout ?");
+			alert.showAndWait().filter(ButtonType.OK::equals).ifPresent(button -> windowManager.showLoginView());
+		});
 	}
 	
-	public List<String> queryProjectNames() {
+	private List<String> queryProjectNames() {
 		//TODO get project names from database. IDs can be retrieved too, and added to MenuItem.userData if needed.
 		return Arrays.asList("Projet 1", "Projet 2", "Projet 3");
 	}
@@ -81,7 +96,7 @@ implements Initializable {
 		private final SimpleStringProperty studentId;
 		private final SimpleIntegerProperty mark;
 		private final SimpleObjectProperty<Date> sendDate;
-		
+
 		public StudentProject(final String name, final String studentId, final Integer mark, final Date sendDate) {
 			this.name = (name == null) ? new SimpleStringProperty() : new SimpleStringProperty(name);
 			this.studentId = (studentId == null) ? new SimpleStringProperty() : new SimpleStringProperty(studentId);
@@ -147,24 +162,21 @@ implements Initializable {
 			studentListButton.setUserData(path);
 			studentListButton.setText(path);
 		});
-		updateControls();
+		updateCreateProjectButton();
 	}
 	
 	@FXML
-	private void handleCreateProjectAction() throws ClassNotFoundException {
+	private void handleCreateProjectAction() {
 		final String projectName = projectNameField.getText();
 		final LocalDate deadline = deadlineDatePicker.getValue();
 		final String expectedOutputPath = (String) expectedOutputButton.getUserData();
 		final String studentListPath = (String) studentListButton.getUserData();
-		
-		//TODO Parse files + send data to DB + display response
-//		new StudentCsvParser("/home/flo/Documents/JavaCorrect/Javacorrect/studentTest.csv");
-		final String projectId = UUID.randomUUID()+"";
+		//		new StudentCsvParser("/home/flo/Documents/JavaCorrect/Javacorrect/studentTest.csv");
+		final String projectId = UUID.randomUUID() + "";
 		//TODO Parse files + send data to DB + display response
 	}
 
-	private void updateControls() {
+	private void updateCreateProjectButton() {
 		createProjectButton.setDisable(projectNameField.getText().isEmpty() || deadlineDatePicker.getValue() == null || (String) studentListButton.getUserData() == null);
 	}
-
 }

@@ -1,29 +1,17 @@
-package application;
+package controller;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.time.LocalDate;
-import java.util.UUID;
 
-import application.MysqlConnexion;
-import application.MysqlPropertiesParser;
-import application.MysqlRequest;
-import application.StudentCsvParser;
+import db.MysqlConnexion;
+import db.MysqlPropertiesParser;
 import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
 public class Main
 extends Application {
-	private static String userLogin;
-	
+
 	public static void main(final String[] args) {
 		MysqlPropertiesParser properties = new MysqlPropertiesParser();
 		try {
@@ -58,32 +46,16 @@ extends Application {
 //			// TODO Auto-generated catch block
 //			e.printStackTrace();
 //		}
-    
 		Application.launch(args);
 	}
 	
 	@Override
-	public void start(final Stage primaryStage)
-	throws Exception {
-		try {
-			final FXMLLoader loader = new FXMLLoader(getClass().getResource("/ui/Login.fxml"));
-			final Stage stage = new Stage();
-			stage.setTitle("Javacorrect");
-			stage.setScene(new Scene(loader.load()));
-			final LoginController loginController = (LoginController) loader.getController();
-			loginController.setStage(stage);
-			stage.showAndWait();
-			if (!(userLogin = loginController.getLogin()).isEmpty()) {
-				final Parent parent = FXMLLoader.load(getClass().getResource("/ui/Javacorrect.fxml"));
-				primaryStage.setScene(new Scene(parent));
-				primaryStage.show();
-			}
-		} catch (final NullPointerException e) {
-			System.err.println("The application failed to load (resource not found). Error :\n" + e);
-		}
-	}
-	
-	public static String getUserLogin() {
-		return userLogin;
+	public void start(final Stage primaryStage) {
+		primaryStage.setTitle("Javacorrect");
+		primaryStage.setScene(new Scene(new Pane()));
+		primaryStage.show();
+
+		final WindowManager windowManager = new WindowManager(primaryStage);
+		windowManager.showLoginView();
 	}
 }

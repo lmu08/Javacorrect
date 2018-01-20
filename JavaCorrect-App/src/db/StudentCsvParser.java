@@ -1,4 +1,4 @@
-package application;
+package db;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import db.MysqlPropertiesParser;
+import db.MysqlRequest;
 
 public class StudentCsvParser {
 

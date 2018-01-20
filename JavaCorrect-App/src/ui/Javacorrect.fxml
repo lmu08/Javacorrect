@@ -5,7 +5,7 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="400.0" minWidth="500.0" prefHeight="400.0" prefWidth="500.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="application.Controller">
+<TabPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="400.0" minWidth="500.0" prefHeight="400.0" prefWidth="500.0" tabClosingPolicy="UNAVAILABLE" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.MainViewController">
   <tabs>
     <Tab text="Consulter les projets">
          <content>
@@ -65,4 +65,11 @@
             </AnchorPane>
          </content></Tab>
   </tabs>
+   <contextMenu>
+      <ContextMenu>
+        <items>
+          <MenuItem fx:id="logoutContextMenu" mnemonicParsing="false" text="Logout" />
+        </items>
+      </ContextMenu>
+   </contextMenu>
 </TabPane>

@@ -5,23 +5,21 @@
 <?import java.lang.*?>
 <?import javafx.scene.layout.*?>
 
-<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="245.0" prefWidth="345.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.LoginController">
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="289.0" prefWidth="345.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controller.RegisterController">
    <center>
       <AnchorPane prefHeight="165.0" prefWidth="327.0" BorderPane.alignment="CENTER">
          <children>
             <TextField fx:id="usernameTextField" layoutX="78.0" layoutY="6.0" prefHeight="25.0" prefWidth="190.0" promptText="Username" AnchorPane.leftAnchor="78.0" AnchorPane.rightAnchor="77.0" AnchorPane.topAnchor="6.0" />
             <PasswordField fx:id="passwordField" layoutX="78.0" layoutY="47.0" prefHeight="25.0" prefWidth="190.0" promptText="Password" AnchorPane.leftAnchor="78.0" AnchorPane.rightAnchor="77.0" AnchorPane.topAnchor="47.0" />
-            <Button layoutX="78.0" layoutY="88.0" mnemonicParsing="false" onAction="#handleLoginAction" prefHeight="25.0" prefWidth="189.0" text="Login" AnchorPane.leftAnchor="78.0" AnchorPane.rightAnchor="78.0" />
-            <TextFlow layoutX="73.0" layoutY="131.0" prefHeight="25.0" prefWidth="200.0">
-               <children>
-                  <Hyperlink onAction="#handleOpenCreateAccountAction" text="You don't have an account ?" />
-               </children>
-            </TextFlow>
+            <TextFlow layoutX="73.0" layoutY="158.0" prefHeight="25.0" prefWidth="200.0" />
+            <TextField layoutX="78.0" layoutY="88.0" prefHeight="25.0" prefWidth="189.0" promptText="Email" />
+            <Button layoutX="78.0" layoutY="127.0" mnemonicParsing="false" onAction="#handleRegisterAction" prefHeight="25.0" prefWidth="190.0" text="Register" />
+            <Hyperlink layoutX="68.0" layoutY="171.0" onAction="#handleOpenSignInAction" text="You already have an account ?" />
          </children>
       </AnchorPane>
    </center>
    <top>
-      <Label prefHeight="75.0" prefWidth="85.0" text="Login" BorderPane.alignment="CENTER">
+      <Label prefHeight="75.0" prefWidth="130.0" text="Register" BorderPane.alignment="CENTER">
          <font>
             <Font size="31.0" />
          </font>

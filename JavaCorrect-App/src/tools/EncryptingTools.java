@@ -1,9 +1,9 @@
-package application;
+package tools;
 
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class ToolsMethods {
+public class EncryptingTools {
 
 	public static String clearTextToEncrypted(String clearText, String algorithm) {
 		StringBuffer result = new StringBuffer();

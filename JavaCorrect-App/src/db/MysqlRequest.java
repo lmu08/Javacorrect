@@ -1,4 +1,4 @@
-package application;
+package db;
 
 import java.math.BigDecimal;
 import java.security.MessageDigest;
@@ -8,6 +8,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.UUID;
+
+import tools.EncryptingTools;
 
 public class MysqlRequest {
 
@@ -141,7 +143,7 @@ public class MysqlRequest {
 		if(rs.isBeforeFirst()) {
 			updateProfesseur(myqlco, login,mailProfesseur,password);
 		}else{
-			String encryptedPassword = ToolsMethods.clearTextToEncrypted(password, "SHA-256");
+			String encryptedPassword = EncryptingTools.clearTextToEncrypted(password, "SHA-256");
 			String insertProf =
 					"INSERT INTO PROFESSEUR "
 					+ "(loginProfesseur, mailProfesseur, passwdProfesseur) "
@@ -158,7 +160,7 @@ public class MysqlRequest {
 	
 	
 	private static int updateProfesseur(Connection myqlco, String login, String mailProfesseur, String password) throws SQLException {
-		String encryptedPassword = ToolsMethods.clearTextToEncrypted(password, "SHA-256");
+		String encryptedPassword = EncryptingTools.clearTextToEncrypted(password, "SHA-256");
 		String insertProf =
 				"UPDATE PROFESSEUR "
 				+ "SET mailProfesseur = ? , passwdProfesseur = ? "
