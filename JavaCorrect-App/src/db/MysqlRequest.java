@@ -1,13 +1,11 @@
 package db;
 
 import java.math.BigDecimal;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.UUID;
 
 import tools.EncryptingTools;
 
@@ -68,7 +66,6 @@ public class MysqlRequest {
 		preparedstatement.setInt(1, anneePromotion);
 		preparedstatement.setInt(2, idClasse);
 		return preparedstatement.executeUpdate();
-		
 	}
 
 	public static int insertStudent(Connection myqlco, int numEtu, String nomEtu, String prenomEtu,int  idPromotion) throws SQLException {
@@ -89,7 +86,6 @@ public class MysqlRequest {
 			res = preparedstatement.executeUpdate();
 		}
 		return res;
-		
 	}
 
 	public static int insertProject(Connection myqlco,String projectId ,LocalDate dateExpi, String projectName) throws SQLException {
@@ -104,7 +100,6 @@ public class MysqlRequest {
 		preparedstatement.setDate(2, java.sql.Date.valueOf(dateExpiString));
 		preparedstatement.setString(3, projectName);
 		return preparedstatement.executeUpdate();
-		
 	}
 	
 	public static int insertEvaluation(Connection myqlco, String projectId, String loginProf, int numEtu, int idPromo) throws SQLException {
@@ -117,7 +112,6 @@ public class MysqlRequest {
 		preparedstatement.setInt(2, numEtu);
 		preparedstatement.setInt(3, idPromo);
 		preparedstatement.setString(4, loginProf);
-		
 		return preparedstatement.executeUpdate();
 	}
 	
@@ -142,7 +136,7 @@ public class MysqlRequest {
 		ResultSet rs = getProfesseurByLogin(myqlco, login);
 		if(rs.isBeforeFirst()) {
 			updateProfesseur(myqlco, login,mailProfesseur,password);
-		}else{
+		} else {
 			String encryptedPassword = EncryptingTools.clearTextToEncrypted(password, "SHA-256");
 			String insertProf =
 					"INSERT INTO PROFESSEUR "
@@ -155,7 +149,6 @@ public class MysqlRequest {
 			return preparedstatement.executeUpdate();
 		}
 		return -1;
-		
 	}
 	
 	
@@ -170,7 +163,6 @@ public class MysqlRequest {
 		preparedstatement.setString(2, encryptedPassword);
 		preparedstatement.setString(3, login.toLowerCase());
 		return preparedstatement.executeUpdate();
-		
 	}
 
 	public static int updateStudent(Connection myqlco, int numEtu, String nomEtu, String prenomEtu,int  idPromotion) throws SQLException {
@@ -184,6 +176,4 @@ public class MysqlRequest {
 		preparedstatement.setInt(4, numEtu);
 		return preparedstatement.executeUpdate();
 	}
-	
-	
 }
