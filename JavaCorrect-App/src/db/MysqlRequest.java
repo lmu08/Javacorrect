@@ -17,7 +17,7 @@ public class MysqlRequest {
 		String getPromotionRequestStr = "select idPromotion " + "FROM PROMOTION INNER JOIN CLASSE "
 				+ "where PROMOTION.CLASSE_idClasse = CLASSE.idClasse " + "and anneePromotion= ? "
 				+ "and intituleClasse= ?;";
-		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(getPromotionRequestStr);
+		PreparedStatement preparedstatement = myqlco.prepareStatement(getPromotionRequestStr);
 		preparedstatement.setInt(1, promo);
 		preparedstatement.setString(2, classe);
 		return preparedstatement.executeQuery();
@@ -25,14 +25,14 @@ public class MysqlRequest {
 
 	public static ResultSet getStudentByNum(int numEtu) throws SQLException {
 		String getidClasse = "select * " + "FROM ETUDIANT " + "where numEtu= ?;";
-		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(getidClasse);
+		PreparedStatement preparedstatement = myqlco.prepareStatement(getidClasse);
 		preparedstatement.setInt(1, numEtu);
 		return preparedstatement.executeQuery();
 	}
 
 	public static ResultSet getidClasseRequest(String classe) throws SQLException {
 		String getidClasse = "select idClasse " + "FROM CLASSE " + "where intituleClasse= ?;";
-		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(getidClasse);
+		PreparedStatement preparedstatement = myqlco.prepareStatement(getidClasse);
 		preparedstatement.setString(1, classe);
 		return preparedstatement.executeQuery();
 	}
@@ -41,7 +41,7 @@ public class MysqlRequest {
 		String getProfByIdQuery = "SELECT * "
 				+ "FROM PROFESSEUR "
 				+ "WHERE loginProfesseur = ? ; ";
-		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(getProfByIdQuery);
+		PreparedStatement preparedstatement = myqlco.prepareStatement(getProfByIdQuery);
 		preparedstatement.setString(1, login);
 		return preparedstatement.executeQuery();
 	}
@@ -59,21 +59,21 @@ public class MysqlRequest {
 		String getProjectRs = "select * " +
 				"FROM PROJET " + 
 				"where idProjet = ?;";
-		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(getProjectRs);
+		PreparedStatement preparedstatement = myqlco.prepareStatement(getProjectRs);
 		preparedstatement.setString(1, idProjet);
 		return preparedstatement.executeQuery();
 	}
 	
 	public static int insertClasse(String classe) throws SQLException {
 		String insertRequest = "INSERT INTO CLASSE " + "(intituleClasse) VALUES " + "(?);";
-		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(insertRequest);
+		PreparedStatement preparedstatement = myqlco.prepareStatement(insertRequest);
 		preparedstatement.setString(1, classe);
 		return preparedstatement.executeUpdate();
 	}
 
 	public static int insertPromotion(int anneePromotion, int idClasse) throws SQLException {
 		String insertRequest = "INSERT INTO PROMOTION " + "(anneePromotion, CLASSE_idClasse) VALUES " + "(?, ?);";
-		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(insertRequest);
+		PreparedStatement preparedstatement = myqlco.prepareStatement(insertRequest);
 		preparedstatement.setInt(1, anneePromotion);
 		preparedstatement.setInt(2, idClasse);
 		return preparedstatement.executeUpdate();
@@ -89,7 +89,7 @@ public class MysqlRequest {
 			String insertRequest = "INSERT INTO ETUDIANT " +
 					"(numEtu, nomEtu, prenomEtu, PROMOTION_idPromotion) VALUES "
 					+ "(?, ?, ?, ?);";
-			java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(insertRequest);
+			PreparedStatement preparedstatement = myqlco.prepareStatement(insertRequest);
 			preparedstatement.setInt(1, numEtu);
 			preparedstatement.setString(2, nomEtu);
 			preparedstatement.setString(3, prenomEtu);
@@ -102,14 +102,15 @@ public class MysqlRequest {
 	public static int insertProject(String projectId ,LocalDate dateExpi, String projectName) throws SQLException {
 		String insertStudent =
 		"INSERT INTO PROJET "
-		+ "(idProjet, dateExpi, intituleProjet) " + 
-		"VALUES (?, ?, ?);";
+		+ "(idProjet, dateExpi, intituleProjet, arguments) " + 
+		"VALUES (?, ?, ?, ?);";
 		String dateExpiString = dateExpi.getYear()+"-"+dateExpi.getMonthValue()+"-"+dateExpi.getDayOfMonth();
 		System.out.println(dateExpiString);
-		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(insertStudent);
+		PreparedStatement preparedstatement = myqlco.prepareStatement(insertStudent);
 		preparedstatement.setString(1,projectId);
 		preparedstatement.setDate(2, java.sql.Date.valueOf(dateExpiString));
 		preparedstatement.setString(3, projectName);
+		preparedstatement.setString(4, arguments);
 		return preparedstatement.executeUpdate();
 	}
 	
@@ -118,7 +119,7 @@ public class MysqlRequest {
 		"INSERT INTO EVALUATION "
 		+ "(PROJET_idProjet, ETUDIANT_numEtu, ETUDIANT_Promotion_idPromotion, PROFESSEUR_loginProfesseur ) " + 
 		"VALUES (?, ?, ?, ?);";
-		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(insertEval);
+		PreparedStatement preparedstatement = myqlco.prepareStatement(insertEval);
 		preparedstatement.setString(1,projectId);
 		preparedstatement.setInt(2, numEtu);
 		preparedstatement.setInt(3, idPromo);
@@ -134,7 +135,7 @@ public class MysqlRequest {
 		+ " ETUDIANT_numEtu = ? and "
 		+ " ETUDIANT_Promotion_idPromotion = ? and"
 		+ " PROFESSEUR_loginProfesseur = ?;";
-		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(addNoteToEval);
+		PreparedStatement preparedstatement = myqlco.prepareStatement(addNoteToEval);
 		preparedstatement.setBigDecimal(1,BigDecimal.valueOf(note));
 		preparedstatement.setString(2,projectId );
 		preparedstatement.setInt(3, numEtu);
@@ -172,7 +173,7 @@ public class MysqlRequest {
 					"INSERT INTO PROFESSEUR "
 					+ "(loginProfesseur, mailProfesseur, passwdProfesseur) "
 					+ "VALUES (?, ?, ?);";
-			java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(insertProf);
+			PreparedStatement preparedstatement = myqlco.prepareStatement(insertProf);
 			preparedstatement.setString(1, login.toLowerCase());
 			preparedstatement.setString(2, mailProfesseur);
 			preparedstatement.setString(3, encryptedPassword);
@@ -188,7 +189,7 @@ public class MysqlRequest {
 				"UPDATE PROFESSEUR "
 				+ "SET mailProfesseur = ? , passwdProfesseur = ? "
 				+ "WHERE loginProfesseur = ?";
-		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(insertProf);
+		PreparedStatement preparedstatement = myqlco.prepareStatement(insertProf);
 		preparedstatement.setString(1, mailProfesseur);
 		preparedstatement.setString(2, encryptedPassword);
 		preparedstatement.setString(3, login.toLowerCase());
@@ -199,7 +200,7 @@ public class MysqlRequest {
 		String updatetRequest = "UPDATE ETUDIANT " +
 				"SET nomEtu = ?, prenomEtu = ?, PROMOTION_idPromotion = ?"
 				+ "WHERE numEtu= ? ;";
-		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(updatetRequest);
+		PreparedStatement preparedstatement = myqlco.prepareStatement(updatetRequest);
 		preparedstatement.setString(1, nomEtu);
 		preparedstatement.setString(2, prenomEtu);
 		preparedstatement.setInt(3, idPromotion);
