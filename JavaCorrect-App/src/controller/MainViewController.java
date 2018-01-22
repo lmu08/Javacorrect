@@ -17,6 +17,8 @@ import java.util.UUID;
 import db.MysqlConnexion;
 import db.MysqlPropertiesParser;
 import db.MysqlRequest;
+import db.StudentCsvParser;
+import db.MysqlRequest;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -63,6 +65,8 @@ implements Initializable {
 	private TextField projectNameField;
 	@FXML
 	private DatePicker deadlineDatePicker;
+	@FXML
+	private TextField argumentsField;
 	@FXML
 	private Button expectedOutputButton;
 	@FXML
@@ -227,13 +231,20 @@ implements Initializable {
 	
 	@FXML
 	private void handleCreateProjectAction() {
+		final String projectId = UUID.randomUUID() + "";
 		final String projectName = projectNameField.getText();
 		final LocalDate deadline = deadlineDatePicker.getValue();
-		final String expectedOutputPath = (String) expectedOutputButton.getUserData();
-		final String studentListPath = (String) studentListButton.getUserData();
-		//		new StudentCsvParser("/home/flo/Documents/JavaCorrect/Javacorrect/studentTest.csv");
-		final String projectId = UUID.randomUUID() + "";
-		//TODO Parse files + send data to DB + display response
+		final String arguments = argumentsField.getText();
+		final String expectedOutputPath = (String) expectedOutputButton.getUserData(); //TODO send to the server using a socket (scp temporarily)
+		try {
+			new StudentCsvParser().parse((String) studentListButton.getUserData());
+			MysqlRequest.insertProject(projectId, deadline, projectName, arguments);
+		} catch (final SQLException e) {
+			final Alert alert = new Alert(AlertType.ERROR);
+			alert.setTitle("Erreur");
+			alert.setContentText("Impossible de créer le projet.");
+			alert.show();
+		}
 	}
 
 	private void updateCreateProjectButton() {

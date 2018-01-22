@@ -16,13 +16,16 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.Alert.AlertType;
 import tools.RegexTools;
 
-public class RegisterController {
+public class RegisterController
+implements Initializable {
 	@FXML
 	private TextField usernameTextField;
 	@FXML
 	private PasswordField passwordField;
 	@FXML
 	private TextField emailTextField;
+	@FXML
+	private Button registerButton;
 	private WindowManager windowManager;
 	private MysqlPropertiesParser properties;
 	private Connection mysqlco;
@@ -33,6 +36,14 @@ public class RegisterController {
 	}
 	public void initManager(final WindowManager windowManager) {
 		this.windowManager = windowManager;
+	}
+
+	@Override
+	public void initialize(final URL arg0, final ResourceBundle arg1) {
+		usernameTextField.textProperty().addListener(event -> updateRegisterButton());
+		passwordField.textProperty().addListener(event -> updateRegisterButton());
+		emailTextField.textProperty().addListener(event -> updateRegisterButton());
+		updateRegisterButton();
 	}
 	
 	@FXML
@@ -83,9 +94,13 @@ public class RegisterController {
 			
 		
 	}
-
+	
 	@FXML
 	private void handleOpenSignInAction() {
 		windowManager.showLoginView();
+	}
+	
+	private void updateRegisterButton() {
+		registerButton.setDisable(usernameTextField.getText().isEmpty() || passwordField.getText().isEmpty() || emailTextField.getText().isEmpty());
 	}
 }

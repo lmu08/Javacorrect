@@ -3,6 +3,7 @@ package db;
 import java.math.BigDecimal;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
@@ -10,8 +11,9 @@ import java.time.LocalDate;
 import tools.EncryptingTools;
 
 public class MysqlRequest {
+	private static final Connection myqlco = MysqlConnexion.getInstance(MysqlPropertiesParser.getInstance());
 
-	public static ResultSet getIdPromotionRequest(Connection myqlco, int promo, String classe) throws SQLException {
+	public static ResultSet getIdPromotionRequest(int promo, String classe) throws SQLException {
 		String getPromotionRequestStr = "select idPromotion " + "FROM PROMOTION INNER JOIN CLASSE "
 				+ "where PROMOTION.CLASSE_idClasse = CLASSE.idClasse " + "and anneePromotion= ? "
 				+ "and intituleClasse= ?;";
@@ -21,21 +23,21 @@ public class MysqlRequest {
 		return preparedstatement.executeQuery();
 	}
 
-	public static ResultSet getStudentByNum(Connection myqlco, int numEtu) throws SQLException {
+	public static ResultSet getStudentByNum(int numEtu) throws SQLException {
 		String getidClasse = "select * " + "FROM ETUDIANT " + "where numEtu= ?;";
 		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(getidClasse);
 		preparedstatement.setInt(1, numEtu);
 		return preparedstatement.executeQuery();
 	}
 
-	public static ResultSet getidClasseRequest(Connection myqlco, String classe) throws SQLException {
+	public static ResultSet getidClasseRequest(String classe) throws SQLException {
 		String getidClasse = "select idClasse " + "FROM CLASSE " + "where intituleClasse= ?;";
 		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(getidClasse);
 		preparedstatement.setString(1, classe);
 		return preparedstatement.executeQuery();
 	}
 	
-	public static ResultSet getProfesseurByLogin(Connection myqlco, String login) throws SQLException {
+	public static ResultSet getProfesseurByLogin(String login) throws SQLException {
 		String getProfByIdQuery = "SELECT * "
 				+ "FROM PROFESSEUR "
 				+ "WHERE loginProfesseur = ? ; ";
@@ -44,7 +46,7 @@ public class MysqlRequest {
 		return preparedstatement.executeQuery();
 	}
 	
-	public static ResultSet getProfesseurByMail(Connection myqlco, String mail) throws SQLException {
+	public static ResultSet getProfesseurByMail(String mail) throws SQLException {
 		String getProfByIdQuery = "SELECT * "
 				+ "FROM PROFESSEUR "
 				+ "WHERE mailProfesseur = ? ; ";
@@ -53,7 +55,7 @@ public class MysqlRequest {
 		return preparedstatement.executeQuery();
 	}
 	
-	public static ResultSet getProject(Connection myqlco, String idProjet) throws SQLException {
+	public static ResultSet getProject(String idProjet) throws SQLException {
 		String getProjectRs = "select * " +
 				"FROM PROJET " + 
 				"where idProjet = ?;";
@@ -61,15 +63,15 @@ public class MysqlRequest {
 		preparedstatement.setString(1, idProjet);
 		return preparedstatement.executeQuery();
 	}
-
-	public static int insertClasse(Connection myqlco, String classe) throws SQLException {
+	
+	public static int insertClasse(String classe) throws SQLException {
 		String insertRequest = "INSERT INTO CLASSE " + "(intituleClasse) VALUES " + "(?);";
 		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(insertRequest);
 		preparedstatement.setString(1, classe);
 		return preparedstatement.executeUpdate();
 	}
 
-	public static int insertPromotion(Connection myqlco, int anneePromotion, int idClasse) throws SQLException {
+	public static int insertPromotion(int anneePromotion, int idClasse) throws SQLException {
 		String insertRequest = "INSERT INTO PROMOTION " + "(anneePromotion, CLASSE_idClasse) VALUES " + "(?, ?);";
 		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(insertRequest);
 		preparedstatement.setInt(1, anneePromotion);
@@ -77,11 +79,11 @@ public class MysqlRequest {
 		return preparedstatement.executeUpdate();
 	}
 
-	public static int insertStudent(Connection myqlco, int numEtu, String nomEtu, String prenomEtu,int  idPromotion) throws SQLException {
+	public static int insertStudent(int numEtu, String nomEtu, String prenomEtu,int  idPromotion) throws SQLException {
 		int res;
-		ResultSet rs = getStudentByNum(myqlco, numEtu);
+		ResultSet rs = getStudentByNum(numEtu);
 		if(rs.isBeforeFirst()) {
-			res = updateStudent(myqlco, numEtu, nomEtu, prenomEtu, idPromotion);
+			res = updateStudent(numEtu, nomEtu, prenomEtu, idPromotion);
 		}
 		else {
 			String insertRequest = "INSERT INTO ETUDIANT " +
@@ -97,7 +99,7 @@ public class MysqlRequest {
 		return res;
 	}
 
-	public static int insertProject(Connection myqlco,String projectId ,LocalDate dateExpi, String projectName) throws SQLException {
+	public static int insertProject(String projectId ,LocalDate dateExpi, String projectName, String arguments) throws SQLException {
 		String insertStudent =
 		"INSERT INTO PROJET "
 		+ "(idProjet, dateExpi, intituleProjet) " + 
@@ -111,7 +113,7 @@ public class MysqlRequest {
 		return preparedstatement.executeUpdate();
 	}
 	
-	public static int insertEvaluation(Connection myqlco, String projectId, String loginProf, int numEtu, int idPromo) throws SQLException {
+	public static int insertEvaluation(String projectId, String loginProf, int numEtu, int idPromo) throws SQLException {
 		String insertEval =
 		"INSERT INTO EVALUATION "
 		+ "(PROJET_idProjet, ETUDIANT_numEtu, ETUDIANT_Promotion_idPromotion, PROFESSEUR_loginProfesseur ) " + 
@@ -124,7 +126,7 @@ public class MysqlRequest {
 		return preparedstatement.executeUpdate();
 	}
 	
-	public static int updateNoteToEvaluation(Connection myqlco, double note, String projectId, String loginprof, int numEtu, int idPromo) throws SQLException {
+	public static int updateNoteToEvaluation( double note, String projectId, String loginprof, int numEtu, int idPromo) throws SQLException {
 		String addNoteToEval =
 		"UPDATE EVALUATION "
 		+ "SET EVALUATION_note= ?"
@@ -141,7 +143,7 @@ public class MysqlRequest {
 		return preparedstatement.executeUpdate();
 	}
 	
-	public static int updateDateEnvoiToEvaluation(Connection myqlco, LocalDate dateEnvoi, String projectId, String loginprof, int numEtu, int idPromo) throws SQLException {
+	public static int updateDateEnvoiToEvaluation(LocalDate dateEnvoi, String projectId, String loginprof, int numEtu, int idPromo) throws SQLException {
 		String addNoteToEval =
 		"UPDATE EVALUATION "
 		+ "SET EVALUATION_date_envoi= ? "
@@ -160,10 +162,10 @@ public class MysqlRequest {
 		return preparedstatement.executeUpdate();
 	}
 	
-	public static int insertProfesseur(Connection myqlco,String login,String mailProfesseur, String password) throws SQLException, NoSuchAlgorithmException {
+	public static int insertProfesseur(String login,String mailProfesseur, String password) throws SQLException, NoSuchAlgorithmException {
 		ResultSet rs = getProfesseurByLogin(myqlco, login);
 		if(rs.isBeforeFirst()) {
-			updateProfesseur(myqlco, login,mailProfesseur,password);
+			updateProfesseur(login,mailProfesseur,password);
 		} else {
 			String encryptedPassword = EncryptingTools.clearTextToEncrypted(password, "SHA-256");
 			String insertProf =
@@ -180,7 +182,7 @@ public class MysqlRequest {
 	}
 	
 	
-	private static int updateProfesseur(Connection myqlco, String login, String mailProfesseur, String password) throws SQLException {
+	private static int updateProfesseur(String login, String mailProfesseur, String password) throws SQLException {
 		String encryptedPassword = EncryptingTools.clearTextToEncrypted(password, "SHA-256");
 		String insertProf =
 				"UPDATE PROFESSEUR "
@@ -193,7 +195,7 @@ public class MysqlRequest {
 		return preparedstatement.executeUpdate();
 	}
 
-	public static int updateStudent(Connection myqlco, int numEtu, String nomEtu, String prenomEtu,int  idPromotion) throws SQLException {
+	public static int updateStudent(int numEtu, String nomEtu, String prenomEtu,int  idPromotion) throws SQLException {
 		String updatetRequest = "UPDATE ETUDIANT " +
 				"SET nomEtu = ?, prenomEtu = ?, PROMOTION_idPromotion = ?"
 				+ "WHERE numEtu= ? ;";

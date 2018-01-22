@@ -1,14 +1,10 @@
 package controller;
 
 import java.security.NoSuchAlgorithmException;
-import java.sql.Connection;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.UUID;
-
-import db.MysqlConnexion;
-import db.MysqlPropertiesParser;
 import db.MysqlRequest;
 import db.StudentCsvParser;
 import javafx.application.Application;
@@ -18,11 +14,11 @@ import javafx.stage.Stage;
 
 public class Main
 extends Application {
-	
+
 	public static void main(final String[] args) {
-		final MysqlPropertiesParser properties = MysqlPropertiesParser.getInstance();
+		//		final String projectId = UUID.randomUUID() + "";
 		Connection myqlco = MysqlConnexion.getInstance(properties);
-		
+		//		final String projectName = "my awesome project";
 			myqlco = MysqlConnexion.getInstance(properties);
 				String projectId = UUID.randomUUID()+"";
 				LocalDate dateExpi = LocalDate.now();
@@ -44,13 +40,13 @@ extends Application {
 				}
 		Application.launch(args);
 	}
-
+	
 	@Override
 	public void start(final Stage primaryStage) {
 		primaryStage.setTitle("Javacorrect");
 		primaryStage.setScene(new Scene(new Pane()));
 		primaryStage.show();
-		
+
 		final WindowManager windowManager = new WindowManager(primaryStage);
 		windowManager.showLoginView();
 	}
