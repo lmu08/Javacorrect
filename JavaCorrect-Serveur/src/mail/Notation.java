@@ -25,10 +25,10 @@ public class Notation {
 	 */
 	static Runtime runtime = Runtime.getRuntime();
 
-	public static void note(String compilDirectory, String numEtu, String idProjet) throws Exception {
+	public static void note(String compilDirectory, String numEtu, String idProjet, String args) throws Exception {
 		// le répertoi de l'étudiant
 		String etuDirectory = compilDirectory + "/" + numEtu + "/" + idProjet;
-		runtime.exec("./javacShell " + etuDirectory + " " + compilDirectory);
+		runtime.exec("./javacShell " + etuDirectory + " " + compilDirectory + " " + args);
 
 		String cmd = "diff -q " + compilDirectory + "/test" + compilDirectory + "/testEtu";
 

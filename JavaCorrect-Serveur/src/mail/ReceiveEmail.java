@@ -18,12 +18,9 @@ import javax.mail.internet.MimeBodyPart;
 
 import com.sun.mail.imap.IMAPStore;
 
-public class MailFichier {
-	static String saveDirectory = "/home/katy";
+public class ReceiveEmail {
 
-	public static void main(String[] args) throws Exception {
-		receiveEmail("java.correct@mail.com", "789@Upmc");
-	}
+	static String saveDirectory = "/home/katy";
 
 	public static void receiveEmail(final String login, final String password) throws Exception {
 		String subject, zipFile, messageContent;
@@ -99,13 +96,14 @@ public class MailFichier {
 					System.out.println("subject : " + subject);
 
 					MyZip.decompress(zipFilePath, destDir, true);
+					String args = " ";
 
-					Notation.note(saveDirectory, numEtu, idProjet);
+					Notation.note(saveDirectory, numEtu, idProjet, args);
 
 				}
 
 			}
-			emailFolder.close(false);
+			emailFolder.close(true);
 			emailStore.close();
 		} catch (final MessagingException | IOException e) {
 			e.printStackTrace();
