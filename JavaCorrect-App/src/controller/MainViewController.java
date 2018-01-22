@@ -2,6 +2,7 @@ package controller;
 
 import java.io.File;
 import java.net.URL;
+import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Date;
@@ -10,6 +11,8 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.UUID;
 
+import db.MysqlRequest;
+import db.StudentCsvParser;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -53,6 +56,8 @@ implements Initializable {
 	private TextField projectNameField;
 	@FXML
 	private DatePicker deadlineDatePicker;
+	@FXML
+	private TextField argumentsField;
 	@FXML
 	private Button expectedOutputButton;
 	@FXML
@@ -128,7 +133,6 @@ implements Initializable {
 
 	private ObservableList<StudentProject> parseStudentProjectList() {
 		//TODO Get selected project and logged user + get students from DB + create the list
-		
 		// Sample :
 		return FXCollections.observableArrayList(
 			new StudentProject("Jean DUPONT", "985656", null, null),
@@ -167,13 +171,20 @@ implements Initializable {
 	
 	@FXML
 	private void handleCreateProjectAction() {
+		final String projectId = UUID.randomUUID() + "";
 		final String projectName = projectNameField.getText();
 		final LocalDate deadline = deadlineDatePicker.getValue();
-		final String expectedOutputPath = (String) expectedOutputButton.getUserData();
-		final String studentListPath = (String) studentListButton.getUserData();
-		//		new StudentCsvParser("/home/flo/Documents/JavaCorrect/Javacorrect/studentTest.csv");
-		final String projectId = UUID.randomUUID() + "";
-		//TODO Parse files + send data to DB + display response
+		final String arguments = argumentsField.getText();
+		final String expectedOutputPath = (String) expectedOutputButton.getUserData(); //TODO send to the server using a socket (scp temporarily)
+		try {
+			new StudentCsvParser().parse((String) studentListButton.getUserData());
+			MysqlRequest.insertProject(projectId, deadline, projectName, arguments);
+		} catch (final SQLException e) {
+			final Alert alert = new Alert(AlertType.ERROR);
+			alert.setTitle("Erreur");
+			alert.setContentText("Impossible de créer le projet.");
+			alert.show();
+		}
 	}
 
 	private void updateCreateProjectButton() {
