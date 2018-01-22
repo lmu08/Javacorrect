@@ -6,14 +6,18 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 public class StudentCsvParser {
 	private static final String SEPARATOR = ",";
 	private String line = "";
 	private String className = null;
 	private int classYear = -1;
-	private boolean promotionChecked = false;
-	private int idPromotion = -1;
+	private ArrayList<Student> alStudent;
+	
+	public StudentCsvParser(){
+		alStudent = new ArrayList<Student>();
+	}
 	
 	/**
 	 * Reads a CSV file.
@@ -47,37 +51,9 @@ public class StudentCsvParser {
 					System.out.println(classYear);
 					continue;
 				}
-				try {
-					if (!promotionChecked) {
-						ResultSet rspromo = MysqlRequest.getIdPromotionRequest(classYear, className);
-						// if is not before first, then class name of classe year doesn't exists in database
-
-						if (!rspromo.isBeforeFirst()) {
-							ResultSet rsidClasse = MysqlRequest.getidClasseRequest(className);
-							if (!rsidClasse.isBeforeFirst()) {
-								MysqlRequest.insertClasse(className);
-								rsidClasse = MysqlRequest.getidClasseRequest(className);
-							}
-							rsidClasse.next();
-							final int idClasse = rsidClasse.getInt("idClasse");
-							MysqlRequest.insertPromotion(classYear, idClasse);
-						}
-						rspromo = MysqlRequest.getIdPromotionRequest(classYear, className);
-						rspromo.next();
-						idPromotion = rspromo.getInt("idPromotion");
-						promotionChecked = true;
-					}
-					final ResultSet rstudent = MysqlRequest.getStudentByNum(studentNum);
-					if (!rstudent.isBeforeFirst()) {
-						MysqlRequest.insertStudent(studentNum, studentFirstName, studentLastName, idPromotion);
-					}
-				} catch (final SQLException ex) {
-					System.out.println("SQLException: " + ex.getMessage());
-					System.out.println("SQLState: " + ex.getSQLState());
-					System.out.println("SQLState: " + ex.toString());
-					System.out.println("VendorError: " + ex.getErrorCode());
-					System.out.println(idPromotion);
-				}
+				alStudent.add(
+				new Student(studentLastName, studentFirstName, studentNum, className, classYear)
+				);
 			}
 		} catch (final FileNotFoundException e) {
 			// TODO Auto-generated catch block
@@ -86,5 +62,8 @@ public class StudentCsvParser {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	public ArrayList<Student> getStudents() {
+		return this.alStudent;
 	}
 }

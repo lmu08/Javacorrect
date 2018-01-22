@@ -17,7 +17,14 @@ import java.util.UUID;
 import db.MysqlConnexion;
 import db.MysqlPropertiesParser;
 import db.MysqlRequest;
+import db.Student;
 import db.StudentCsvParser;
+import exceptions.DeadlineException;
+import exceptions.MarkingDbManagementException;
+import exceptions.ProjectDbManagementException;
+import exceptions.ProjectNameException;
+import exceptions.StudentClassroomException;
+import exceptions.StudentDbManagementException;
 import db.MysqlRequest;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
@@ -40,6 +47,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
+import tools.DateTools;
 
 public class MainViewController
 implements Initializable {
@@ -58,7 +66,7 @@ implements Initializable {
 	@FXML
 	private TableColumn<StudentProject, Double> markColumn;
 	@FXML
-	private TableColumn<StudentProject, String> classColumn;
+	private TableColumn<StudentProject, String> classroomColumn;
 	@FXML
 	private TableColumn<StudentProject, Date> sendDateColumn;
 	@FXML
@@ -83,7 +91,7 @@ implements Initializable {
 		studentNameColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, String>("studentName"));
 		studentIdColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, String>("studentId"));
 		markColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, Double>("mark"));
-		classColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, String>("class"));
+		classroomColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, String>("classroom"));
 		sendDateColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, Date>("sendDate"));
 		
 		projectNameField.textProperty().addListener(event -> updateCreateProjectButton());
@@ -125,21 +133,21 @@ implements Initializable {
 	public static final class StudentProject {
 		private final SimpleStringProperty studentName;
 		private final SimpleIntegerProperty studentId;
-		private final SimpleStringProperty classe;
+		private final SimpleStringProperty classroom;
 		private final SimpleDoubleProperty mark;
 		private final SimpleObjectProperty<Date> sendDate;
 
-		public StudentProject(final String studentName,final Integer studentId, final String classe, final Double mark, final Date sendDate) {
+		public StudentProject(final String studentName,final Integer studentId, final String classroom, final Double mark, final Date sendDate) {
 			this.studentName = (studentName == null) ? new SimpleStringProperty() : new SimpleStringProperty(studentName);
 			this.studentId = (studentId == null) ? new SimpleIntegerProperty() : new SimpleIntegerProperty(studentId);
-			this.classe = (classe == null) ? new SimpleStringProperty() : new SimpleStringProperty(classe);
+			this.classroom = (classroom == null) ? new SimpleStringProperty() : new SimpleStringProperty(classroom);
 			this.mark = (mark == null) ? new SimpleDoubleProperty() : new SimpleDoubleProperty(mark);
 			this.sendDate = (sendDate == null) ? new SimpleObjectProperty<>() : new SimpleObjectProperty<>(sendDate);
 		
 		}
 		
-		public String getClasse() {
-			return classe.get();
+		public String getClassroom() {
+			return classroom.get();
 		}
 		
 		public String getStudentName() {
@@ -230,21 +238,93 @@ implements Initializable {
 	}
 	
 	@FXML
-	private void handleCreateProjectAction() {
+	private void handleCreateProjectAction() throws ProjectNameException, StudentClassroomException, ProjectDbManagementException, DeadlineException, StudentDbManagementException, MarkingDbManagementException {
 		final String projectId = UUID.randomUUID() + "";
 		final String projectName = projectNameField.getText();
 		final LocalDate deadline = deadlineDatePicker.getValue();
 		final String arguments = argumentsField.getText();
 		final String expectedOutputPath = (String) expectedOutputButton.getUserData(); //TODO send to the server using a socket (scp temporarily)
-		try {
-			new StudentCsvParser().parse((String) studentListButton.getUserData());
-			MysqlRequest.insertProject(projectId, deadline, projectName, arguments);
-		} catch (final SQLException e) {
-			final Alert alert = new Alert(AlertType.ERROR);
-			alert.setTitle("Erreur");
-			alert.setContentText("Impossible de créer le projet.");
-			alert.show();
+		ArrayList<Student> students;
+		StudentCsvParser sparser = new StudentCsvParser();
+		sparser.parse((String) studentListButton.getUserData());
+		students = sparser.getStudents();
+		String className = students.get(0).getClasse();
+		int classYear = students.get(0).getPromo();
+		ResultSet rspromo;
+		int idPromotion = -1;
+		
+		
+		if(DateTools.checkMinimumDeadlineDays(deadline,3) <0) {
+			throw new DeadlineException("L'échéance du projet doit être dans au moins 3 jours");
 		}
+		
+		try {
+			ResultSet rs = MysqlRequest.getEvaluationByLoginProjName(this.currentUser, projectName);
+			if(rs.isBeforeFirst()) {
+				throw new ProjectNameException("Vous avez déjà crée un projet du même nom ");
+			}
+		}
+		catch(SQLException sqle) {
+			System.out.println(sqle.getSQLState());
+			throw new ProjectNameException("Erreur lors de la vérification du nom de projet ");
+		}
+		
+		try {
+			rspromo = MysqlRequest.getIdPromotionRequest(classYear, className);
+			if (!rspromo.isBeforeFirst()) {
+				ResultSet rsidClasse = MysqlRequest.getidClasseRequest(className);
+				if (!rsidClasse.isBeforeFirst()) {
+					MysqlRequest.insertClasse(className);
+					rsidClasse = MysqlRequest.getidClasseRequest(className);
+				}
+				rsidClasse.next();
+				final int idClasse = rsidClasse.getInt("idClasse");
+				MysqlRequest.insertPromotion(classYear, idClasse);
+			}
+			rspromo = MysqlRequest.getIdPromotionRequest(classYear, className);
+			rspromo.next();
+			idPromotion = rspromo.getInt("idPromotion");
+		}
+		catch(SQLException e) {
+			System.out.println(e.getSQLState());
+			throw new StudentClassroomException("Erreur sur la gestion des classes et promotions,"
+					+ " vérifiez ces colonnes dans votre csv");
+		}
+		try {
+			MysqlRequest.insertProject(projectId, deadline, projectName);
+		}
+		catch(SQLException e) {
+			throw new ProjectDbManagementException("Erreur lors de l'insertion du projet");
+		}
+		for(Student student : students) {
+			ResultSet rstudent;
+			try {
+				rstudent = MysqlRequest.getStudentByNum(student.getNumEtu());
+				if (!rstudent.isBeforeFirst()) {
+					MysqlRequest.insertStudent(
+							student.getNumEtu(),
+							student.getPrenom(),
+							student.getNom(),
+							idPromotion);
+				}
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				System.out.println(e.getSQLState());
+				throw new StudentDbManagementException("Erreur lors de l'ajout des étudiants en base de données");
+			}
+			
+			try {
+				MysqlRequest.insertEvaluation(projectId, this.currentUser, student.getNumEtu(), idPromotion);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				System.out.println(e.getSQLState());
+				throw new MarkingDbManagementException("Erreur lors de l'ajout des étudiants en base de données");
+				
+			}
+		}
+		
+		
+			
 	}
 
 	private void updateCreateProjectButton() {

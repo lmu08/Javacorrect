@@ -99,7 +99,7 @@ public class MysqlRequest {
 		return res;
 	}
 
-	public static int insertProject(String projectId ,LocalDate dateExpi, String projectName, String arguments) throws SQLException {
+	public static int insertProject(String projectId ,LocalDate dateExpi, String projectName) throws SQLException {
 		String insertStudent =
 		"INSERT INTO PROJET "
 		+ "(idProjet, dateExpi, intituleProjet) " + 
@@ -163,7 +163,7 @@ public class MysqlRequest {
 	}
 	
 	public static int insertProfesseur(String login,String mailProfesseur, String password) throws SQLException, NoSuchAlgorithmException {
-		ResultSet rs = getProfesseurByLogin(myqlco, login);
+		ResultSet rs = getProfesseurByLogin(login);
 		if(rs.isBeforeFirst()) {
 			updateProfesseur(login,mailProfesseur,password);
 		} else {
@@ -218,6 +218,22 @@ public class MysqlRequest {
 		return preparedstatement.executeQuery();
 		
 	}
+	
+	
+	public static ResultSet getEvaluationByLoginProjName(String loginProfesseur, String intituleProjet) throws SQLException {
+		String request = "SELECT * "
+				+ "FROM PROJET as proj "
+				+ "INNER JOIN EVALUATION as eval "
+				+ "ON proj.idProjet = eval.PROJET_idProjet "
+				+ "WHERE eval.PROFESSEUR_loginProfesseur = ? "
+				+ "and proj.intituleProjet = ? ;";
+		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(request);
+		preparedstatement.setString(1, loginProfesseur);
+		preparedstatement.setString(2, intituleProjet);
+		return preparedstatement.executeQuery();
+		
+	}
+	
 	
 	public static ResultSet getEvaluation(Connection myqlco, String loginProfesseur, String intituleProjet) throws SQLException {
 		String request = "SELECT * from PROJET AS p "

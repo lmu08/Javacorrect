@@ -1,14 +1,18 @@
 package controller;
 
+import java.awt.Button;
+import java.net.URL;
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ResourceBundle;
 
 import db.MysqlConnexion;
 import db.MysqlPropertiesParser;
 import db.MysqlRequest;
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
@@ -59,16 +63,16 @@ implements Initializable {
 		}
 		if(errorMessage.equals("")) {
 			try {
-				ResultSet rsMail = MysqlRequest.getProfesseurByMail(mysqlco,email.toLowerCase());
+				ResultSet rsMail = MysqlRequest.getProfesseurByMail(email.toLowerCase());
 				if(rsMail.isBeforeFirst()) {
 					errorMessage = "Adresse mail déjà existante";
 				}
-				ResultSet rsLogin = MysqlRequest.getProfesseurByLogin(mysqlco,username.toLowerCase());
+				ResultSet rsLogin = MysqlRequest.getProfesseurByLogin(username.toLowerCase());
 				if(rsLogin.isBeforeFirst()) {
 					errorMessage = "Login déjà existant";
 				}
 				if(errorMessage.equals("")) {
-					MysqlRequest.insertProfesseur(mysqlco, username, email, password);
+					MysqlRequest.insertProfesseur(username, email, password);
 				}
 				
 			} catch (NoSuchAlgorithmException nsae) {
