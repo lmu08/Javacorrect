@@ -16,7 +16,7 @@ public class MyZip {
      * décompresse le fichier zip dans le répertoire donné
      * @param file le fichier zip à décompresser
      * @param folder le répertoire où les fichiers seront extraits
-     * @param deleteZipAfter un boolean
+     * @param deleteZipAfter un boolean pour supprimer le .zip
      * @throws FileNotFoundException
      * @throws IOException
      */
