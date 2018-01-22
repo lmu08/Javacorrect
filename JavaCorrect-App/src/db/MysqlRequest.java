@@ -44,6 +44,15 @@ public class MysqlRequest {
 		return preparedstatement.executeQuery();
 	}
 	
+	public static ResultSet getProfesseurByMail(Connection myqlco, String mail) throws SQLException {
+		String getProfByIdQuery = "SELECT * "
+				+ "FROM PROFESSEUR "
+				+ "WHERE mailProfesseur = ? ; ";
+		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(getProfByIdQuery);
+		preparedstatement.setString(1, mail);
+		return preparedstatement.executeQuery();
+	}
+	
 	public static ResultSet getProject(Connection myqlco, String idProjet) throws SQLException {
 		String getProjectRs = "select * " +
 				"FROM PROJET " + 
@@ -175,5 +184,17 @@ public class MysqlRequest {
 		preparedstatement.setInt(3, idPromotion);
 		preparedstatement.setInt(4, numEtu);
 		return preparedstatement.executeUpdate();
+	}
+	
+	public static ResultSet getProjectNameByTeacher(Connection myqlco, String loginProfesseur) throws SQLException {
+		String request = "select PROJET.intituleProjet "
+				+ "FROM EVALUATION INNER JOIN PROFESSEUR INNER JOIN PROJET on "
+				+ "EVALUATION.PROFESSEUR_loginProfesseur = PROFESSEUR.loginProfesseur "
+				+ "and EVALUATION.PROJET_idProjet = PROJET.idProjet "
+				+ "and loginProfesseur= ?;";
+		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(request);
+		preparedstatement.setString(1, loginProfesseur);
+		return preparedstatement.executeQuery();
+		
 	}
 }

@@ -2,7 +2,10 @@ package controller;
 
 import java.io.File;
 import java.net.URL;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -10,6 +13,9 @@ import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.UUID;
 
+import db.MysqlConnexion;
+import db.MysqlPropertiesParser;
+import db.MysqlRequest;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -77,18 +83,34 @@ implements Initializable {
 	}
 
 	public void initUser(final WindowManager windowManager, final String login) {
-		currentUser = login;
+		this.currentUser = login;
 		logoutContextMenu.setOnAction(event -> {
 			final Alert alert = new Alert(AlertType.CONFIRMATION);
 			alert.setTitle("Logout");
 			alert.setContentText("Are you sure you want to logout ?");
 			alert.showAndWait().filter(ButtonType.OK::equals).ifPresent(button -> windowManager.showLoginView());
+			
 		});
+		projectNameButton.setItems(FXCollections.observableList(queryProjectNames()));
 	}
 	
 	private List<String> queryProjectNames() {
 		//TODO get project names from database. IDs can be retrieved too, and added to MenuItem.userData if needed.
-		return Arrays.asList("Projet 1", "Projet 2", "Projet 3");
+		ArrayList<String> al = new ArrayList<String>();
+		java.sql.Connection mysqlco = MysqlConnexion.getInstance(MysqlPropertiesParser.getInstance());
+		String projectName;
+		try {
+			ResultSet rs = MysqlRequest.getProjectNameByTeacher(mysqlco, this.currentUser);
+			while(rs.next()) {
+				projectName = rs.getString("intituleProjet");
+				al.add(projectName);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return al;
 	}
 	
 	public static final class StudentProject {
