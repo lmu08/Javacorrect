@@ -11,6 +11,8 @@ import java.util.ResourceBundle;
 import db.MysqlConnexion;
 import db.MysqlPropertiesParser;
 import db.MysqlRequest;
+import exceptions.InvalidMailAdressException;
+import exceptions.RegistrationException;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
@@ -51,29 +53,25 @@ implements Initializable {
 	}
 	
 	@FXML
-	private void handleRegisterAction() {
+	private void handleRegisterAction() throws RegistrationException, InvalidMailAdressException {
 		//TODO Create account using username and password (+ send confirmation email ?)
 		String username = usernameTextField.getText();
 		String email = emailTextField.getText();
 		String password = passwordField.getText();
-		String errorMessage = "";
 		String mailPattern ="^[^\\W][a-zA-Z0-9_]+(\\.[a-zA-Z0-9_]+)*\\@[a-zA-Z0-9_]+(\\.[a-zA-Z0-9_]+)*\\.[a-zA-Z]{2,4}$";
 		if(!RegexTools.pregMatch(mailPattern, email)) {
-			errorMessage = "Adresse mail invalide";
+			throw new InvalidMailAdressException("vérifiez votre adresse mail");
 		}
-		if(errorMessage.equals("")) {
 			try {
 				ResultSet rsMail = MysqlRequest.getProfesseurByMail(email.toLowerCase());
 				if(rsMail.isBeforeFirst()) {
-					errorMessage = "Adresse mail déjà existante";
+					throw new InvalidMailAdressException("Adresse mail déjà existante");
 				}
 				ResultSet rsLogin = MysqlRequest.getProfesseurByLogin(username.toLowerCase());
 				if(rsLogin.isBeforeFirst()) {
-					errorMessage = "Login déjà existant";
+					throw new RegistrationException("Login déjà existant");
 				}
-				if(errorMessage.equals("")) {
-					MysqlRequest.insertProfesseur(username, email, password);
-				}
+				MysqlRequest.insertProfesseur(username, email, password);
 				
 			} catch (NoSuchAlgorithmException nsae) {
 				// TODO Auto-generated catch block
@@ -81,22 +79,10 @@ implements Initializable {
 			}
 			catch(SQLException sqle) {
 				sqle.printStackTrace();
-				errorMessage ="erreur inconnue au niveau de la base de données";
+				throw new RegistrationException("erreur inconnue au niveau de la base de données");
 			}
-		}
-		if(!errorMessage.equals("")){
-			final Alert alert = new Alert(AlertType.ERROR);
-			alert.setHeaderText("L'inscription a échoué");
-			final Label label = new Label(errorMessage);
-			label.setWrapText(true);
-			alert.getDialogPane().setContent(label);
-			alert.showAndWait();
-		}else {
 			windowManager.showLoginView();
-		}
-		
-			
-		
+
 	}
 	
 	@FXML

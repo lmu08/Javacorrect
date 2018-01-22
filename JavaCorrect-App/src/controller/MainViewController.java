@@ -86,7 +86,9 @@ implements Initializable {
 	@Override
 	public void initialize(final URL url, final ResourceBundle resourceBundle) {
 		projectNameButton.setItems(FXCollections.observableList(queryProjectNames()));
-		projectNameButton.setOnAction(event -> updateTable());
+		projectNameButton.setOnAction(event -> {
+				updateTable();
+		});
 		
 		studentNameColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, String>("studentName"));
 		studentIdColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, String>("studentId"));
@@ -167,12 +169,17 @@ implements Initializable {
 		}
 	}
 
-	private void updateTable() {
+	private void updateTable(){
+		try {
 		studentProjectsTable.setItems(parseStudentProjectList());
 		deleteProjectButton.setDisable(false);
+		}
+		catch(MarkingDbManagementException e) {
+			e.printStackTrace();
+		}
 	}
 
-	private ObservableList<StudentProject> parseStudentProjectList() {
+	private ObservableList<StudentProject> parseStudentProjectList() throws MarkingDbManagementException {
 		//TODO Get selected project and logged user + get students from DB + create the list
 		String nom;
 		int numEtu;
@@ -183,7 +190,6 @@ implements Initializable {
 		ArrayList<StudentProject> al = new ArrayList<StudentProject>();
 		java.sql.Connection mysqlco = MysqlConnexion.getInstance(MysqlPropertiesParser.getInstance());
 		try {
-			System.out.println('d');
 			ResultSet rs = MysqlRequest.getEvaluation(mysqlco, this.currentUser, intituleProjet );
 			while(rs.next()) {
 				dateEnvoi = rs.getDate("EVALUATION_date_envoi");
@@ -201,6 +207,7 @@ implements Initializable {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			throw new MarkingDbManagementException("Erreur lors de la récupération des données");
 		}
 		// Sample :
 		return FXCollections.observableArrayList(

@@ -4,6 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import db.MysqlRequest;
+import exceptions.AuthenticationException;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
@@ -27,18 +28,15 @@ public class LoginController {
 	}
 	
 	@FXML
-	public void handleLoginAction() {
+	public void handleLoginAction() throws AuthenticationException {
 		try {
 			final String username = usernameTextField.getText().toLowerCase();
 			final String password = passwordField.getText();
-			boolean failed = false;
-			String errorMessage = "";
 			//TODO check in DB if ok
 			System.out.println(username);
 			final ResultSet rs = MysqlRequest.getProfesseurByLogin(username);
 			if (!rs.isBeforeFirst()) {
-				failed = true;
-				errorMessage = "Ce login n'existe pas.";
+				throw new AuthenticationException("Ce login n'existe pas");
 			} else {
 				System.out.println(username);
 				rs.next();
@@ -49,20 +47,12 @@ public class LoginController {
 				if (passwordDb.equals(encryptedPassword) && username.equals(loginDb)) {
 					windowManager.showMainView(username);
 				} else {
-					failed = true;
-					errorMessage = "Ce mot de passe est invalide.";
+					throw new AuthenticationException("Mot de passe invalide");
 				}
-			}
-			if (failed) {
-				final Alert alert = new Alert(AlertType.ERROR);
-				alert.setHeaderText("L'authentification a échoué");
-				final Label label = new Label(errorMessage);
-				label.setWrapText(true);
-				alert.getDialogPane().setContent(label);
-				alert.show();
 			}
 		} catch (final SQLException e) {
 			// TODO: handle exception
+			System.out.println(e.getSQLState());
 		}
 	}
 
