@@ -179,9 +179,13 @@ implements Initializable {
 		try {
 			new StudentCsvParser().parse((String) studentListButton.getUserData());
 			MysqlRequest.insertProject(projectId, deadline, projectName, arguments);
+			final Alert alert = new Alert(AlertType.INFORMATION);
+			alert.setHeaderText("Création réussie");
+			alert.setContentText("Le projet a été créé avec succès.");
+			alert.show();
 		} catch (final SQLException e) {
 			final Alert alert = new Alert(AlertType.ERROR);
-			alert.setTitle("Erreur");
+			alert.setHeaderText("Erreur");
 			alert.setContentText("Impossible de créer le projet.");
 			alert.show();
 		}
