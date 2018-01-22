@@ -141,6 +141,25 @@ public class MysqlRequest {
 		return preparedstatement.executeUpdate();
 	}
 	
+	public static int updateDateEnvoiToEvaluation(Connection myqlco, LocalDate dateEnvoi, String projectId, String loginprof, int numEtu, int idPromo) throws SQLException {
+		String addNoteToEval =
+		"UPDATE EVALUATION "
+		+ "SET EVALUATION_date_envoi= ? "
+		+ "WHERE PROJET_idProjet= ? and"
+		+ " ETUDIANT_numEtu = ? and "
+		+ " ETUDIANT_Promotion_idPromotion = ? and"
+		+ " PROFESSEUR_loginProfesseur = ?;";
+		String dateEnvoiString = dateEnvoi.getYear()+"-"+dateEnvoi.getMonthValue()+"-"+dateEnvoi.getDayOfMonth();
+		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(addNoteToEval);
+		preparedstatement.setDate(1, java.sql.Date.valueOf(dateEnvoiString));
+		preparedstatement.setString(2,projectId );
+		preparedstatement.setInt(3, numEtu);
+		preparedstatement.setInt(4, idPromo);
+		preparedstatement.setString(5, loginprof);
+		System.out.println(preparedstatement.executeUpdate());
+		return preparedstatement.executeUpdate();
+	}
+	
 	public static int insertProfesseur(Connection myqlco,String login,String mailProfesseur, String password) throws SQLException, NoSuchAlgorithmException {
 		ResultSet rs = getProfesseurByLogin(myqlco, login);
 		if(rs.isBeforeFirst()) {
@@ -196,5 +215,23 @@ public class MysqlRequest {
 		preparedstatement.setString(1, loginProfesseur);
 		return preparedstatement.executeQuery();
 		
+	}
+	
+	public static ResultSet getEvaluation(Connection myqlco, String loginProfesseur, String intituleProjet) throws SQLException {
+		String request = "SELECT * from PROJET AS p "
+				+ "INNER JOIN EVALUATION as eval "
+					+ "ON p.idProjet = eval.PROJET_idProjet "
+				+ "INNER JOIN ETUDIANT AS etu "
+					+ "ON etu.numEtu = eval.ETUDIANT_numEtu "
+				+ "INNER JOIN PROMOTION AS promo "
+					+ "ON etu.PROMOTION_idPromotion = promo.idPromotion "
+				+ "INNER JOIN CLASSE AS classe "
+					+ "ON promo.CLASSE_idClasse = classe.idClasse "
+				+ "WHERE eval.PROFESSEUR_loginProfesseur = ? "
+				+ "and p.intituleProjet = ? ;";
+		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(request);
+		preparedstatement.setString(1, loginProfesseur);
+		preparedstatement.setString(2, intituleProjet);
+		return preparedstatement.executeQuery();
 	}
 }

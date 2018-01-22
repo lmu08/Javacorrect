@@ -2,6 +2,7 @@ package controller;
 
 import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
+import java.sql.Date;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.UUID;
@@ -19,27 +20,28 @@ public class Main
 extends Application {
 	
 	public static void main(final String[] args) {
-//		final MysqlPropertiesParser properties = MysqlPropertiesParser.getInstance();
-//		Connection myqlco = MysqlConnexion.getInstance(properties);
-//		
-//			myqlco = MysqlConnexion.getInstance(properties);
-//				String projectId = UUID.randomUUID()+"";
-//				LocalDate dateExpi = LocalDate.now();
-//				String projectName = "my awesome project";
-//				try {
-//					MysqlRequest.insertProfesseur(myqlco, "bonprof", "jeandelafontaine@upmc.fr", "mdp");
-//					MysqlRequest.insertProject(myqlco, projectId, dateExpi, projectName);
-//					MysqlRequest.getProject(myqlco, projectId);
-//					new StudentCsvParser("/home/flo/Documents/JavaCorrect/Javacorrect/JavaCorrect-App/resources/studentTest.csv");
-//					MysqlRequest.insertEvaluation(myqlco, projectId, "bonprof", 3514665, 1);
-//					MysqlRequest.updateNoteToEvaluation(myqlco, 10.5, projectId, "bonprof", 3514665, 1);
-//				} catch (NoSuchAlgorithmException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				} catch (SQLException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}
+		final MysqlPropertiesParser properties = MysqlPropertiesParser.getInstance();
+		Connection myqlco = MysqlConnexion.getInstance(properties);
+		
+			myqlco = MysqlConnexion.getInstance(properties);
+				String projectId = UUID.randomUUID()+"";
+				LocalDate dateExpi = LocalDate.now();
+				String projectName = "my awesome project";
+				try {
+					MysqlRequest.insertProfesseur(myqlco, "bonprof", "jeandelafontaine@upmc.fr", "mdp");
+					MysqlRequest.insertProject(myqlco, projectId, dateExpi, projectName);
+					MysqlRequest.getProject(myqlco, projectId);
+					new StudentCsvParser("/home/flo/Documents/JavaCorrect/Javacorrect/JavaCorrect-App/resources/studentTest.csv");
+					MysqlRequest.insertEvaluation(myqlco, projectId, "bonprof", 3514665, 1);
+					MysqlRequest.updateNoteToEvaluation(myqlco, 11.5, projectId, "bonprof", 3514665, 1);
+					MysqlRequest.updateDateEnvoiToEvaluation(myqlco, LocalDate.now(), projectId, "bonprof", 3514665, 1);
+				} catch (NoSuchAlgorithmException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 		Application.launch(args);
 	}
 

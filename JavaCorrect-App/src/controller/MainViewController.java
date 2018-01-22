@@ -1,6 +1,7 @@
 package controller;
 
 import java.io.File;
+import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -16,6 +17,7 @@ import java.util.UUID;
 import db.MysqlConnexion;
 import db.MysqlPropertiesParser;
 import db.MysqlRequest;
+import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
@@ -52,7 +54,9 @@ implements Initializable {
 	@FXML
 	private TableColumn<StudentProject, String> studentIdColumn;
 	@FXML
-	private TableColumn<StudentProject, Integer> markColumn;
+	private TableColumn<StudentProject, Double> markColumn;
+	@FXML
+	private TableColumn<StudentProject, String> classColumn;
 	@FXML
 	private TableColumn<StudentProject, Date> sendDateColumn;
 	@FXML
@@ -72,9 +76,10 @@ implements Initializable {
 		projectNameButton.setItems(FXCollections.observableList(queryProjectNames()));
 		projectNameButton.setOnAction(event -> updateTable());
 		
-		studentNameColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, String>("name"));
+		studentNameColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, String>("studentName"));
 		studentIdColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, String>("studentId"));
-		markColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, Integer>("mark"));
+		markColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, Double>("mark"));
+		classColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, String>("class"));
 		sendDateColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, Date>("sendDate"));
 		
 		projectNameField.textProperty().addListener(event -> updateCreateProjectButton());
@@ -114,27 +119,34 @@ implements Initializable {
 	}
 	
 	public static final class StudentProject {
-		private final SimpleStringProperty name;
-		private final SimpleStringProperty studentId;
-		private final SimpleIntegerProperty mark;
+		private final SimpleStringProperty studentName;
+		private final SimpleIntegerProperty studentId;
+		private final SimpleStringProperty classe;
+		private final SimpleDoubleProperty mark;
 		private final SimpleObjectProperty<Date> sendDate;
 
-		public StudentProject(final String name, final String studentId, final Integer mark, final Date sendDate) {
-			this.name = (name == null) ? new SimpleStringProperty() : new SimpleStringProperty(name);
-			this.studentId = (studentId == null) ? new SimpleStringProperty() : new SimpleStringProperty(studentId);
-			this.mark = (mark == null) ? new SimpleIntegerProperty() : new SimpleIntegerProperty(mark);
+		public StudentProject(final String studentName,final Integer studentId, final String classe, final Double mark, final Date sendDate) {
+			this.studentName = (studentName == null) ? new SimpleStringProperty() : new SimpleStringProperty(studentName);
+			this.studentId = (studentId == null) ? new SimpleIntegerProperty() : new SimpleIntegerProperty(studentId);
+			this.classe = (classe == null) ? new SimpleStringProperty() : new SimpleStringProperty(classe);
+			this.mark = (mark == null) ? new SimpleDoubleProperty() : new SimpleDoubleProperty(mark);
 			this.sendDate = (sendDate == null) ? new SimpleObjectProperty<>() : new SimpleObjectProperty<>(sendDate);
+		
 		}
 		
-		public String getName() {
-			return name.get();
+		public String getClasse() {
+			return classe.get();
+		}
+		
+		public String getStudentName() {
+			return studentName.get();
 		}
 
-		public String getStudentId() {
+		public int getStudentId() {
 			return studentId.get();
 		}
 		
-		public Integer getMark() {
+		public double getMark() {
 			return mark.get();
 		}
 		
@@ -150,11 +162,37 @@ implements Initializable {
 
 	private ObservableList<StudentProject> parseStudentProjectList() {
 		//TODO Get selected project and logged user + get students from DB + create the list
-		
+		String nom;
+		int numEtu;
+		BigDecimal note;
+		String classe;
+		java.sql.Date dateEnvoi;
+		String intituleProjet = projectNameButton.getValue();
+		ArrayList<StudentProject> al = new ArrayList<StudentProject>();
+		java.sql.Connection mysqlco = MysqlConnexion.getInstance(MysqlPropertiesParser.getInstance());
+		try {
+			System.out.println('d');
+			ResultSet rs = MysqlRequest.getEvaluation(mysqlco, this.currentUser, intituleProjet );
+			while(rs.next()) {
+				dateEnvoi = rs.getDate("EVALUATION_date_envoi");
+				nom = rs.getString("nomEtu") + " "+ rs.getString("prenomEtu");
+				
+				numEtu = rs.getInt("numEtu");
+				note = rs.getBigDecimal("EVALUATION_note");
+				classe = rs.getString("intituleClasse");
+				System.out.println(classe);
+				System.out.println(classe);
+				al.add(
+						new StudentProject(nom, numEtu, classe, note.doubleValue(), dateEnvoi)
+						);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		// Sample :
 		return FXCollections.observableArrayList(
-			new StudentProject("Jean DUPONT", "985656", null, null),
-			new StudentProject("Paul SMITH", "765654", 16, new Date()));
+			al);
 	}
 
 	@FXML
