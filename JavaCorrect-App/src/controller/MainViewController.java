@@ -14,10 +14,10 @@ import java.util.ResourceBundle;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import db.MarkingDbManagementException;
 import db.MysqlRequest;
 import db.Student;
 import db.StudentCsvParser;
-import exceptions.MarkingDbManagementException;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -77,7 +77,7 @@ implements Initializable {
 	@FXML
 	private Button createProjectButton;
 	private String currentUser;
-
+	
 	@Override
 	public void initialize(final URL url, final ResourceBundle resourceBundle) {
 		projectNameButton.setOnMouseClicked(event -> {
@@ -92,18 +92,18 @@ implements Initializable {
 				}
 			}
 		});
-
+		
 		studentNameColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, String>("studentName"));
 		studentIdColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, String>("studentId"));
 		markColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, Double>("mark"));
 		classroomColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, String>("classroom"));
 		sendDateColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, Date>("sendDate"));
-
+		
 		projectNameField.textProperty().addListener(event -> updateCreateProjectButton());
 		deadlineDatePicker.setEditable(false);
 		deadlineDatePicker.setOnAction(event -> updateCreateProjectButton());
 	}
-	
+
 	public void initUser(final WindowManager windowManager, final String login) {
 		this.currentUser = login;
 		logoutContextMenu.setOnAction(event -> {
@@ -111,11 +111,11 @@ implements Initializable {
 			alert.setTitle("Logout");
 			alert.setContentText("Are you sure you want to logout ?");
 			alert.showAndWait().filter(ButtonType.OK::equals).ifPresent(button -> windowManager.showLoginView());
-
+			
 		});
 		projectNameButton.setItems(FXCollections.observableList(queryProjectNames()));
 	}
-
+	
 	private List<String> queryProjectNames() {
 		final ArrayList<String> al = new ArrayList<>();
 		String projectName;
@@ -131,14 +131,14 @@ implements Initializable {
 		}
 		return al.stream().distinct().collect(Collectors.toList());
 	}
-
+	
 	public static final class StudentProject {
 		private final SimpleStringProperty studentName;
 		private final SimpleIntegerProperty studentId;
 		private final SimpleDoubleProperty mark;
 		private final SimpleObjectProperty<Date> sendDate;
 		private final SimpleStringProperty classroom;
-		
+
 		public StudentProject(final String studentName, final Integer studentId, final String classroom, final Double mark, final Date sendDate) {
 			this.studentName = (studentName == null) ? new SimpleStringProperty() : new SimpleStringProperty(studentName);
 			this.studentId = (studentId == null) ? new SimpleIntegerProperty() : new SimpleIntegerProperty(studentId);
@@ -146,28 +146,28 @@ implements Initializable {
 			this.sendDate = (sendDate == null) ? new SimpleObjectProperty<>() : new SimpleObjectProperty<>(sendDate);
 			this.classroom = (classroom == null) ? new SimpleStringProperty() : new SimpleStringProperty(classroom);
 		}
-
+		
 		public String getStudentName() {
 			return studentName.get();
 		}
-
+		
 		public int getStudentId() {
 			return studentId.get();
 		}
-		
+
 		public double getMark() {
 			return mark.get();
 		}
-		
+
 		public Date getSendDate() {
 			return sendDate.get();
 		}
-		
+
 		public String getClassroom() {
 			return classroom.get();
 		}
 	}
-	
+
 	private void updateTable() {
 		try {
 			studentProjectsTable.setItems(parseStudentProjectList());
@@ -176,7 +176,7 @@ implements Initializable {
 			e.printStackTrace();
 		}
 	}
-	
+
 	private ObservableList<StudentProject> parseStudentProjectList()
 	throws MarkingDbManagementException {
 		final String intituleProjet = projectNameButton.getValue();
@@ -197,12 +197,12 @@ implements Initializable {
 		}
 		return FXCollections.observableArrayList(projets);
 	}
-	
+
 	@FXML
 	private void handleDeleteProjectAction() {
 		//TODO Send delete request to DB + display response
 	}
-	
+
 	@FXML
 	private void handleSelectOutputAction() {
 		final FileChooser fileChooser = new FileChooser();
@@ -214,7 +214,7 @@ implements Initializable {
 			expectedOutputButton.setText(path);
 		});
 	}
-	
+
 	@FXML
 	private void handleSelectListAction() {
 		final FileChooser fileChooser = new FileChooser();
@@ -227,17 +227,17 @@ implements Initializable {
 		});
 		updateCreateProjectButton();
 	}
-
+	
 	@FXML
 	private void handleCreateProjectAction() {
 		//TODO send to the server using a socket (scp temporarily)
 		@SuppressWarnings("unused")
 		final String expectedOutputPath = (String) expectedOutputButton.getUserData();
-		
+
 		try {
 			//Create the project in db
 			final Optional<String> projectId = insertProject();
-			
+
 			if (projectId.isPresent()) {
 				try {
 					//Parse the student list and send it to db
@@ -258,7 +258,7 @@ implements Initializable {
 			showWarning(PROJECT_CREATION_ERROR, "Une erreur serveur s'est produite lors de la création du projet.");
 		}
 	}
-	
+
 	private Optional<String> insertProject()
 	throws SQLException {
 		final String projectId = UUID.randomUUID().toString();
@@ -277,7 +277,7 @@ implements Initializable {
 		}
 		return Optional.empty();
 	}
-	
+
 	private void insertCSV(final String projectId)
 	throws SQLException {
 		final StudentCsvParser sparser = new StudentCsvParser();
@@ -286,7 +286,7 @@ implements Initializable {
 		final String className = students.stream().findAny().map(Student::getClasse).orElse("");
 		final int classYear = students.stream().findAny().map(Student::getPromo).orElse(0);
 		int idPromotion = -1;
-		
+
 		if (className.isEmpty() || classYear == 0) {
 			showWarning(SAVE_CSV_ERROR, "La classe ou promotion spécifiée est invalide.");
 		} else {
@@ -311,14 +311,14 @@ implements Initializable {
 			}
 		}
 	}
-	
+
 	private void showWarning(final String title, final String message) {
 		final Alert alert = new Alert(AlertType.WARNING);
 		alert.setHeaderText(title);
 		alert.setContentText(message);
 		alert.show();
 	}
-	
+
 	private void updateCreateProjectButton() {
 		createProjectButton.setDisable(projectNameField.getText().isEmpty() || deadlineDatePicker.getValue() == null || (String) studentListButton.getUserData() == null);
 	}
