@@ -4,35 +4,34 @@ public class Student {
 	private final String nom;
 	private final String prenom;
 	private final int numEtu;
-	private final String classe;
-	private final int promo;
+	private final Classroom classroom;
+	private String email;
 
-	public Student(final String nom, final String prenom, final int numEtu, final String classe, final int classYear) {
+	public Student(final String nom, final String prenom, final int numEtu, final String email, final Classroom classroom) {
 		this.nom = nom;
 		this.prenom = prenom;
 		this.numEtu = numEtu;
-		this.classe = classe;
-		this.promo = classYear;
+		this.email = email;
+		this.classroom = classroom;
 	}
 	
 	public String getNom() {
-		return nom;
+		return this.nom;
 	}
 	
 	public String getPrenom() {
-		return prenom;
+		return this.prenom;
 	}
 	
 	public int getNumEtu() {
-		return numEtu;
+		return this.numEtu;
 	}
 	
-	public String getClasse() {
-		return classe;
+	public Classroom getClassroom() {
+		return this.classroom;
 	}
-	
-	public int getPromo() {
-		return promo;
+	public String getEmail() {
+		return this.email;
 	}
 	
 }

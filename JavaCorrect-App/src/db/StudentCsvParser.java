@@ -8,12 +8,15 @@ import java.util.ArrayList;
 public class StudentCsvParser {
 	private static final String SEPARATOR = ",";
 	private String line = "";
-	private String className = null;
+	private String className;
 	private int classYear = -1;
+	private Classroom classroom;
 	private final ArrayList<Student> students;
+	private final ArrayList<Classroom> classrooms;
 
 	public StudentCsvParser() {
 		students = new ArrayList<>();
+		classrooms = new ArrayList<>();
 	}
 
 	/**
@@ -36,19 +39,28 @@ public class StudentCsvParser {
 				final int studentNum = Integer.parseInt(students[0]);
 				final String studentFirstName = students[1];
 				final String studentLastName = students[2];
+				final String studentemail = students[3];
+				final String currentClassName = students[4];
+				final int currentClassYear = Integer.parseInt(students[5]);
 
-				if (className == null) {
-					className = students[3];
+				if (this.className == null) {
+					this.className = currentClassName;
 				}
-				if (classYear == -1) {
-					classYear = Integer.parseInt(students[4]);
+				if (this.classYear == -1) {
+					this.classYear = currentClassYear;
 				}
-				if (!students[3].equals(className) || Integer.parseInt(students[4]) != classYear) {
-					System.err.println("Warning : l'étudiant " + studentFirstName + " " + studentLastName + " n'a pas pu être ajouté" + " car sa classe ou promotion est différente de celle des autres");
-					System.out.println(classYear);
-					continue;
+				
+				if(this.classroom == null) {
+					this.classroom = new Classroom(this.className, this.classYear);
 				}
-				this.students.add(new Student(studentLastName, studentFirstName, studentNum, className, classYear));
+				
+				if (!this.className.equals(currentClassName) || this.classYear != currentClassYear) {
+					this.className = currentClassName;
+					this.classYear = currentClassYear;
+					this.classroom = new Classroom(this.className, this.classYear);
+					this.classrooms.add(this.classroom);
+				}
+				this.students.add(new Student(studentLastName, studentFirstName, studentNum,studentemail, this.classroom));
 			}
 		} catch (final IOException e) {
 			e.printStackTrace();
@@ -57,5 +69,9 @@ public class StudentCsvParser {
 	
 	public ArrayList<Student> getStudents() {
 		return students;
+	}
+
+	public ArrayList<Classroom> getClassrooms() {
+		return classrooms;
 	}
 }

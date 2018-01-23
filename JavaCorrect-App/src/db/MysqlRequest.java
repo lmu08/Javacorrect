@@ -106,20 +106,21 @@ public class MysqlRequest {
 		}
 	}
 	
-	public static int insertStudent(final int numEtu, final String nomEtu, final String prenomEtu, final int idPromotion)
+	public static int insertStudent(final int numEtu, final String nomEtu, final String prenomEtu, final String emailEtu ,final int idPromotion)
 	throws CSVSavingException {
 		try {
 			int res;
 			final ResultSet rs = getStudentByNum(numEtu);
 			if (rs.isBeforeFirst()) {
-				res = updateStudent(numEtu, nomEtu, prenomEtu, idPromotion);
+				res = updateStudent(numEtu, nomEtu, prenomEtu, emailEtu,idPromotion);
 			} else {
-				final String insertRequest = "INSERT INTO ETUDIANT " + "(numEtu, nomEtu, prenomEtu, PROMOTION_idPromotion) VALUES " + "(?, ?, ?, ?);";
+				final String insertRequest = "INSERT INTO ETUDIANT " + "(numEtu, nomEtu, prenomEtu, emailEtu ,PROMOTION_idPromotion) VALUES " + "(?, ?, ?, ?, ?);";
 				final PreparedStatement preparedstatement = myqlco.prepareStatement(insertRequest);
 				preparedstatement.setInt(1, numEtu);
 				preparedstatement.setString(2, nomEtu);
 				preparedstatement.setString(3, prenomEtu);
-				preparedstatement.setInt(4, idPromotion);
+				preparedstatement.setString(4, emailEtu);
+				preparedstatement.setInt(5, idPromotion);
 				res = preparedstatement.executeUpdate();
 			}
 			return res;
@@ -218,14 +219,15 @@ public class MysqlRequest {
 		return preparedstatement.executeUpdate();
 	}
 	
-	public static int updateStudent(final int numEtu, final String nomEtu, final String prenomEtu, final int idPromotion)
+	public static int updateStudent(final int numEtu, final String nomEtu, final String prenomEtu, final String emailEtu, final int idPromotion)
 	throws SQLException {
-		final String updatetRequest = "UPDATE ETUDIANT " + "SET nomEtu = ?, prenomEtu = ?, PROMOTION_idPromotion = ?" + "WHERE numEtu= ? ;";
+		final String updatetRequest = "UPDATE ETUDIANT " + "SET nomEtu = ?, prenomEtu = ?, emailEtu = ?, PROMOTION_idPromotion = ?" + "WHERE numEtu= ? ;";
 		final PreparedStatement preparedstatement = myqlco.prepareStatement(updatetRequest);
 		preparedstatement.setString(1, nomEtu);
 		preparedstatement.setString(2, prenomEtu);
-		preparedstatement.setInt(3, idPromotion);
-		preparedstatement.setInt(4, numEtu);
+		preparedstatement.setString(3, emailEtu);
+		preparedstatement.setInt(4, idPromotion);
+		preparedstatement.setInt(5, numEtu);
 		return preparedstatement.executeUpdate();
 	}
 
@@ -259,4 +261,5 @@ public class MysqlRequest {
 		preparedstatement.setString(2, intituleProjet);
 		return preparedstatement.executeQuery();
 	}
+
 }

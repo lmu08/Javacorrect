@@ -14,6 +14,7 @@ import java.util.ResourceBundle;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import db.Classroom;
 import db.MarkingDbManagementException;
 import db.MysqlRequest;
 import db.Student;
@@ -63,6 +64,8 @@ implements Initializable {
 	@FXML
 	private TableColumn<StudentProject, String> classroomColumn;
 	@FXML
+	private TableColumn<StudentProject, String> studentEmailColumn;
+	@FXML
 	private TableColumn<StudentProject, Date> sendDateColumn;
 	@FXML
 	private TextField projectNameField;
@@ -95,6 +98,7 @@ implements Initializable {
 		
 		studentNameColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, String>("studentName"));
 		studentIdColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, String>("studentId"));
+		studentEmailColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, String>("studentEmail"));
 		markColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, Double>("mark"));
 		classroomColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, String>("classroom"));
 		sendDateColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, Date>("sendDate"));
@@ -135,13 +139,15 @@ implements Initializable {
 	public static final class StudentProject {
 		private final SimpleStringProperty studentName;
 		private final SimpleIntegerProperty studentId;
+		private final SimpleStringProperty studentEmail;
 		private final SimpleDoubleProperty mark;
 		private final SimpleObjectProperty<Date> sendDate;
 		private final SimpleStringProperty classroom;
 
-		public StudentProject(final String studentName, final Integer studentId, final String classroom, final Double mark, final Date sendDate) {
+		public StudentProject(final String studentName, final Integer studentId, final String studentEmail,final String classroom, final Double mark, final Date sendDate) {
 			this.studentName = (studentName == null) ? new SimpleStringProperty() : new SimpleStringProperty(studentName);
 			this.studentId = (studentId == null) ? new SimpleIntegerProperty() : new SimpleIntegerProperty(studentId);
+			this.studentEmail = (studentEmail == null) ? new SimpleStringProperty() : new SimpleStringProperty(studentEmail);
 			this.mark = (mark == null) ? new SimpleDoubleProperty() : new SimpleDoubleProperty(mark);
 			this.sendDate = (sendDate == null) ? new SimpleObjectProperty<>() : new SimpleObjectProperty<>(sendDate);
 			this.classroom = (classroom == null) ? new SimpleStringProperty() : new SimpleStringProperty(classroom);
@@ -166,6 +172,9 @@ implements Initializable {
 		public String getClassroom() {
 			return classroom.get();
 		}
+		public String getStudentEmail() {
+			return studentEmail.get();
+		}
 	}
 
 	private void updateTable() {
@@ -186,10 +195,11 @@ implements Initializable {
 			while (rs.next()) {
 				final Date dateEnvoi = rs.getDate("EVALUATION_date_envoi");
 				final String nom = rs.getString("nomEtu") + " " + rs.getString("prenomEtu");
+				final String mail = rs.getString("emailEtu");
 				final int numEtu = rs.getInt("numEtu");
 				final BigDecimal note = Optional.ofNullable(rs.getBigDecimal("EVALUATION_note")).orElse(new BigDecimal(-1));
 				final String classe = rs.getString("intituleClasse");
-				projets.add(new StudentProject(nom, numEtu, classe, note.doubleValue(), dateEnvoi));
+				projets.add(new StudentProject(nom, numEtu,mail , classe, note.doubleValue(), dateEnvoi));
 			}
 		} catch (final SQLException e) {
 			System.out.println(e.getSQLState());
@@ -283,34 +293,32 @@ implements Initializable {
 		final StudentCsvParser sparser = new StudentCsvParser();
 		sparser.parse((String) studentListButton.getUserData());
 		final ArrayList<Student> students = sparser.getStudents();
-		final String className = students.stream().findAny().map(Student::getClasse).orElse("");
-		final int classYear = students.stream().findAny().map(Student::getPromo).orElse(0);
-		int idPromotion = -1;
-
-		if (className.isEmpty() || classYear == 0) {
-			showWarning(SAVE_CSV_ERROR, "La classe ou promotion spécifiée est invalide.");
-		} else {
-			if (!MysqlRequest.getIdPromotionRequest(classYear, className).isBeforeFirst()) {
-				ResultSet rsidClasse = MysqlRequest.getidClasseRequest(className);
-				if (!rsidClasse.isBeforeFirst()) {
-					MysqlRequest.insertClasse(className);
-					rsidClasse = MysqlRequest.getidClasseRequest(className);
+		final ArrayList<Classroom> classrooms = sparser.getClassrooms();
+		for(final Classroom classroom : classrooms) {
+			if(!MysqlRequest.getIdPromotionRequest(classroom.getYear(), classroom.getClassroom()).isBeforeFirst()) {
+				if(!MysqlRequest.getidClasseRequest(classroom.getClassroom()).isBeforeFirst())
+				{
+					MysqlRequest.insertClasse(classroom.getClassroom());
 				}
-				rsidClasse.next();
-				final int idClasse = rsidClasse.getInt("idClasse");
-				MysqlRequest.insertPromotion(classYear, idClasse);
+				ResultSet rsClasse = MysqlRequest.getidClasseRequest(classroom.getClassroom());
+				rsClasse.next();
+				MysqlRequest.insertPromotion(classroom.getYear(), rsClasse.getInt("idClasse"));
 			}
-			final ResultSet rspromo = MysqlRequest.getIdPromotionRequest(classYear, className);
-			rspromo.next();
-			idPromotion = rspromo.getInt("idPromotion");
+		}
 			for (final Student student : students) {
+				System.out.println(student.getClassroom().toString());
+				System.out.println(student.getClassroom().getClassroom());
+				ResultSet rspromo = MysqlRequest.getIdPromotionRequest(student.getClassroom().getYear(), student.getClassroom().getClassroom());
+				rspromo.next();
+				int idPromotion = rspromo.getInt("idPromotion");
+				System.out.println(idPromotion);
 				if (!MysqlRequest.getStudentByNum(student.getNumEtu()).isBeforeFirst()) {
-					MysqlRequest.insertStudent(student.getNumEtu(), student.getPrenom(), student.getNom(), idPromotion);
+					
+					MysqlRequest.insertStudent(student.getNumEtu(), student.getPrenom(), student.getNom(), student.getEmail() ,idPromotion);
 				}
 				MysqlRequest.insertEvaluation(projectId, currentUser, student.getNumEtu(), idPromotion);
 			}
 		}
-	}
 
 	private void showWarning(final String title, final String message) {
 		final Alert alert = new Alert(AlertType.WARNING);
