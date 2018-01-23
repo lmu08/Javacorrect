@@ -1,29 +1,23 @@
 package controller;
 
-import java.awt.Button;
 import java.net.URL;
-import java.security.NoSuchAlgorithmException;
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ResourceBundle;
+import java.util.regex.Pattern;
 
-import db.MysqlConnexion;
-import db.MysqlPropertiesParser;
 import db.MysqlRequest;
-import exceptions.InvalidMailAdressException;
-import exceptions.RegistrationException;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Alert;
-import javafx.scene.control.Label;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
-import javafx.scene.control.Alert.AlertType;
-import tools.RegexTools;
 
 public class RegisterController
 implements Initializable {
+	private static final String MAIL_PATTERN = "^[^\\W][a-zA-Z0-9_]+(\\.[a-zA-Z0-9_]+)*\\@[a-zA-Z0-9_]+(\\.[a-zA-Z0-9_]+)*\\.[a-zA-Z]{2,4}$";
 	@FXML
 	private TextField usernameTextField;
 	@FXML
@@ -33,19 +27,13 @@ implements Initializable {
 	@FXML
 	private Button registerButton;
 	private WindowManager windowManager;
-	private MysqlPropertiesParser properties;
-	private Connection mysqlco;
 	
-	public RegisterController(){
-		this.properties = MysqlPropertiesParser.getInstance();
-		this.mysqlco = MysqlConnexion.getInstance(this.properties);
-	}
 	public void initManager(final WindowManager windowManager) {
 		this.windowManager = windowManager;
 	}
 
 	@Override
-	public void initialize(final URL arg0, final ResourceBundle arg1) {
+	public void initialize(final URL url, final ResourceBundle resourceBundle) {
 		usernameTextField.textProperty().addListener(event -> updateRegisterButton());
 		passwordField.textProperty().addListener(event -> updateRegisterButton());
 		emailTextField.textProperty().addListener(event -> updateRegisterButton());
@@ -53,36 +41,39 @@ implements Initializable {
 	}
 	
 	@FXML
-	private void handleRegisterAction() throws RegistrationException, InvalidMailAdressException {
+	private void handleRegisterAction() {
 		//TODO Create account using username and password (+ send confirmation email ?)
-		String username = usernameTextField.getText();
-		String email = emailTextField.getText();
-		String password = passwordField.getText();
-		String mailPattern ="^[^\\W][a-zA-Z0-9_]+(\\.[a-zA-Z0-9_]+)*\\@[a-zA-Z0-9_]+(\\.[a-zA-Z0-9_]+)*\\.[a-zA-Z]{2,4}$";
-		if(!RegexTools.pregMatch(mailPattern, email)) {
-			throw new InvalidMailAdressException("vérifiez votre adresse mail");
-		}
+		final String username = usernameTextField.getText();
+		final String email = emailTextField.getText();
+		final String password = passwordField.getText();
+		if (!Pattern.matches(MAIL_PATTERN, email)) {
+			showWarning("Mail invalide", "Veuillez vérifier votre adresse mail.");
+		} else {
 			try {
-				ResultSet rsMail = MysqlRequest.getProfesseurByMail(email.toLowerCase());
-				if(rsMail.isBeforeFirst()) {
-					throw new InvalidMailAdressException("Adresse mail déjà existante");
+				final ResultSet rsMail = MysqlRequest.getProfesseurByMail(email.toLowerCase());
+				if (rsMail.isBeforeFirst()) {
+					showWarning("Mail invalide", "Cette adresse mail existe déjà.");
+				} else {
+					final ResultSet rsLogin = MysqlRequest.getProfesseurByLogin(username.toLowerCase());
+					if (rsLogin.isBeforeFirst()) {
+						showWarning("Login invalide", "Ce login existe déjà.");
+					} else {
+						MysqlRequest.insertProfesseur(username, email, password);
+						windowManager.showLoginView();
+					}
 				}
-				ResultSet rsLogin = MysqlRequest.getProfesseurByLogin(username.toLowerCase());
-				if(rsLogin.isBeforeFirst()) {
-					throw new RegistrationException("Login déjà existant");
-				}
-				MysqlRequest.insertProfesseur(username, email, password);
-				
-			} catch (NoSuchAlgorithmException nsae) {
-				// TODO Auto-generated catch block
-				nsae.printStackTrace();
+			} catch (final SQLException e) {
+				e.printStackTrace();
+				showWarning("Création impossible", "Une erreur serveur s'est produite lors de la création du compte.");
 			}
-			catch(SQLException sqle) {
-				sqle.printStackTrace();
-				throw new RegistrationException("erreur inconnue au niveau de la base de données");
-			}
-			windowManager.showLoginView();
-
+		}
+	}
+	
+	public void showWarning(final String title, final String message) {
+		final Alert alert = new Alert(AlertType.WARNING);
+		alert.setHeaderText(title);
+		alert.setContentText(message);
+		alert.show();
 	}
 	
 	@FXML

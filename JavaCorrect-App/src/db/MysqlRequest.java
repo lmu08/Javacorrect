@@ -1,58 +1,80 @@
 package db;
 
 import java.math.BigDecimal;
-import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 
+import exceptions.CSVSavingException;
+import exceptions.ProjectCreationException;
+import exceptions.RegistrationException;
 import tools.EncryptingTools;
 
 public class MysqlRequest {
 	private static final Connection myqlco = MysqlConnexion.getInstance(MysqlPropertiesParser.getInstance());
 
-	public static ResultSet getIdPromotionRequest(int promo, String classe) throws SQLException {
-		String getPromotionRequestStr = "select idPromotion " + "FROM PROMOTION INNER JOIN CLASSE "
-				+ "where PROMOTION.CLASSE_idClasse = CLASSE.idClasse " + "and anneePromotion= ? "
-				+ "and intituleClasse= ?;";
-		PreparedStatement preparedstatement = myqlco.prepareStatement(getPromotionRequestStr);
-		preparedstatement.setInt(1, promo);
-		preparedstatement.setString(2, classe);
-		return preparedstatement.executeQuery();
+	public static ResultSet getIdPromotionRequest(int promo, String classe) throws CSVSavingException {
+		try {
+			String getPromotionRequestStr = "select idPromotion " + "FROM PROMOTION INNER JOIN CLASSE "
+					+ "where PROMOTION.CLASSE_idClasse = CLASSE.idClasse " + "and anneePromotion= ? "
+					+ "and intituleClasse= ?;";
+			PreparedStatement preparedstatement = myqlco.prepareStatement(getPromotionRequestStr);
+			preparedstatement.setInt(1, promo);
+			preparedstatement.setString(2, classe);
+			return preparedstatement.executeQuery();
+		} catch (SQLException e) {
+			throw new CSVSavingException(e);
+		}
 	}
 
-	public static ResultSet getStudentByNum(int numEtu) throws SQLException {
-		String getidClasse = "select * " + "FROM ETUDIANT " + "where numEtu= ?;";
-		PreparedStatement preparedstatement = myqlco.prepareStatement(getidClasse);
-		preparedstatement.setInt(1, numEtu);
-		return preparedstatement.executeQuery();
+	public static ResultSet getStudentByNum(int numEtu) throws CSVSavingException {
+		try {
+			String getidClasse = "select * " + "FROM ETUDIANT " + "where numEtu= ?;";
+			PreparedStatement preparedstatement = myqlco.prepareStatement(getidClasse);
+			preparedstatement.setInt(1, numEtu);
+			return preparedstatement.executeQuery();
+		} catch (SQLException e) {
+			throw new CSVSavingException(e);
+		}
 	}
 
-	public static ResultSet getidClasseRequest(String classe) throws SQLException {
-		String getidClasse = "select idClasse " + "FROM CLASSE " + "where intituleClasse= ?;";
-		PreparedStatement preparedstatement = myqlco.prepareStatement(getidClasse);
-		preparedstatement.setString(1, classe);
-		return preparedstatement.executeQuery();
+	public static ResultSet getidClasseRequest(String classe) throws CSVSavingException {
+		try {
+			String getidClasse = "select idClasse " + "FROM CLASSE " + "where intituleClasse= ?;";
+			PreparedStatement preparedstatement = myqlco.prepareStatement(getidClasse);
+			preparedstatement.setString(1, classe);
+			return preparedstatement.executeQuery();
+		} catch (SQLException e) {
+			throw new CSVSavingException(e);
+		}
 	}
 	
-	public static ResultSet getProfesseurByLogin(String login) throws SQLException {
-		String getProfByIdQuery = "SELECT * "
-				+ "FROM PROFESSEUR "
-				+ "WHERE loginProfesseur = ? ; ";
-		PreparedStatement preparedstatement = myqlco.prepareStatement(getProfByIdQuery);
-		preparedstatement.setString(1, login);
-		return preparedstatement.executeQuery();
+	public static ResultSet getProfesseurByLogin(String login) throws RegistrationException {
+		try {
+			String getProfByIdQuery = "SELECT * "
+					+ "FROM PROFESSEUR "
+					+ "WHERE loginProfesseur = ? ; ";
+			PreparedStatement preparedstatement = myqlco.prepareStatement(getProfByIdQuery);
+			preparedstatement.setString(1, login);
+			return preparedstatement.executeQuery();
+		} catch (SQLException e) {
+			throw new RegistrationException(e);
+		}
 	}
 	
-	public static ResultSet getProfesseurByMail(String mail) throws SQLException {
-		String getProfByIdQuery = "SELECT * "
-				+ "FROM PROFESSEUR "
-				+ "WHERE mailProfesseur = ? ; ";
-		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(getProfByIdQuery);
-		preparedstatement.setString(1, mail);
-		return preparedstatement.executeQuery();
+	public static ResultSet getProfesseurByMail(String mail) throws RegistrationException {
+		try {
+			String getProfByIdQuery = "SELECT * "
+					+ "FROM PROFESSEUR "
+					+ "WHERE mailProfesseur = ? ; ";
+			java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(getProfByIdQuery);
+			preparedstatement.setString(1, mail);
+			return preparedstatement.executeQuery();
+		} catch (SQLException e) {
+			throw new RegistrationException(e);
+		}
 	}
 	
 	public static ResultSet getProject(String idProjet) throws SQLException {
@@ -64,67 +86,87 @@ public class MysqlRequest {
 		return preparedstatement.executeQuery();
 	}
 	
-	public static int insertClasse(String classe) throws SQLException {
-		String insertRequest = "INSERT INTO CLASSE " + "(intituleClasse) VALUES " + "(?);";
-		PreparedStatement preparedstatement = myqlco.prepareStatement(insertRequest);
-		preparedstatement.setString(1, classe);
-		return preparedstatement.executeUpdate();
-	}
-
-	public static int insertPromotion(int anneePromotion, int idClasse) throws SQLException {
-		String insertRequest = "INSERT INTO PROMOTION " + "(anneePromotion, CLASSE_idClasse) VALUES " + "(?, ?);";
-		PreparedStatement preparedstatement = myqlco.prepareStatement(insertRequest);
-		preparedstatement.setInt(1, anneePromotion);
-		preparedstatement.setInt(2, idClasse);
-		return preparedstatement.executeUpdate();
-	}
-
-	public static int insertStudent(int numEtu, String nomEtu, String prenomEtu,int  idPromotion) throws SQLException {
-		int res;
-		ResultSet rs = getStudentByNum(numEtu);
-		if(rs.isBeforeFirst()) {
-			res = updateStudent(numEtu, nomEtu, prenomEtu, idPromotion);
-		}
-		else {
-			String insertRequest = "INSERT INTO ETUDIANT " +
-					"(numEtu, nomEtu, prenomEtu, PROMOTION_idPromotion) VALUES "
-					+ "(?, ?, ?, ?);";
+	public static int insertClasse(String classe) throws CSVSavingException {
+		try {	
+			String insertRequest = "INSERT INTO CLASSE " + "(intituleClasse) VALUES " + "(?);";
 			PreparedStatement preparedstatement = myqlco.prepareStatement(insertRequest);
-			preparedstatement.setInt(1, numEtu);
-			preparedstatement.setString(2, nomEtu);
-			preparedstatement.setString(3, prenomEtu);
-			preparedstatement.setInt(4, idPromotion);
-			res = preparedstatement.executeUpdate();
+			preparedstatement.setString(1, classe);
+			return preparedstatement.executeUpdate();
+		} catch (SQLException e) {
+			throw new CSVSavingException(e);
 		}
-		return res;
 	}
 
-	public static int insertProject(String projectId ,LocalDate dateExpi, String projectName) throws SQLException {
-		String insertStudent =
-		"INSERT INTO PROJET "
-		+ "(idProjet, dateExpi, intituleProjet, arguments) " + 
-		"VALUES (?, ?, ?, ?);";
-		String dateExpiString = dateExpi.getYear()+"-"+dateExpi.getMonthValue()+"-"+dateExpi.getDayOfMonth();
-		System.out.println(dateExpiString);
-		PreparedStatement preparedstatement = myqlco.prepareStatement(insertStudent);
-		preparedstatement.setString(1,projectId);
-		preparedstatement.setDate(2, java.sql.Date.valueOf(dateExpiString));
-		preparedstatement.setString(3, projectName);
-		preparedstatement.setString(4, arguments);
-		return preparedstatement.executeUpdate();
+	public static int insertPromotion(int anneePromotion, int idClasse) throws CSVSavingException {
+		try {
+			String insertRequest = "INSERT INTO PROMOTION " + "(anneePromotion, CLASSE_idClasse) VALUES " + "(?, ?);";
+			PreparedStatement preparedstatement = myqlco.prepareStatement(insertRequest);
+			preparedstatement.setInt(1, anneePromotion);
+			preparedstatement.setInt(2, idClasse);
+			return preparedstatement.executeUpdate();
+		} catch (SQLException e) {
+			throw new CSVSavingException(e);
+		}
+	}
+
+	public static int insertStudent(int numEtu, String nomEtu, String prenomEtu,int  idPromotion) throws CSVSavingException {
+		try {
+			int res;
+			ResultSet rs = getStudentByNum(numEtu);
+			if(rs.isBeforeFirst()) {
+				res = updateStudent(numEtu, nomEtu, prenomEtu, idPromotion);
+			}
+			else {
+				String insertRequest = "INSERT INTO ETUDIANT " +
+						"(numEtu, nomEtu, prenomEtu, PROMOTION_idPromotion) VALUES "
+						+ "(?, ?, ?, ?);";
+				PreparedStatement preparedstatement = myqlco.prepareStatement(insertRequest);
+				preparedstatement.setInt(1, numEtu);
+				preparedstatement.setString(2, nomEtu);
+				preparedstatement.setString(3, prenomEtu);
+				preparedstatement.setInt(4, idPromotion);
+				res = preparedstatement.executeUpdate();
+			}
+			return res;
+		} catch (SQLException e) {
+			throw new CSVSavingException(e);
+		}
+	}
+
+	public static int insertProject(String projectId ,LocalDate dateExpi, String projectName, String arguments) throws ProjectCreationException {
+		try {
+			String insertStudent =
+			"INSERT INTO PROJET "
+			+ "(idProjet, dateExpi, intituleProjet, arguments) " + 
+			"VALUES (?, ?, ?, ?);";
+			String dateExpiString = dateExpi.getYear()+"-"+dateExpi.getMonthValue()+"-"+dateExpi.getDayOfMonth();
+			System.out.println(dateExpiString);
+			PreparedStatement preparedstatement = myqlco.prepareStatement(insertStudent);
+			preparedstatement.setString(1,projectId);
+			preparedstatement.setDate(2, java.sql.Date.valueOf(dateExpiString));
+			preparedstatement.setString(3, projectName);
+			preparedstatement.setString(4, arguments);
+			return preparedstatement.executeUpdate();
+		} catch (SQLException e) {
+			throw new ProjectCreationException(e);
+		}
 	}
 	
-	public static int insertEvaluation(String projectId, String loginProf, int numEtu, int idPromo) throws SQLException {
-		String insertEval =
-		"INSERT INTO EVALUATION "
-		+ "(PROJET_idProjet, ETUDIANT_numEtu, ETUDIANT_Promotion_idPromotion, PROFESSEUR_loginProfesseur ) " + 
-		"VALUES (?, ?, ?, ?);";
-		PreparedStatement preparedstatement = myqlco.prepareStatement(insertEval);
-		preparedstatement.setString(1,projectId);
-		preparedstatement.setInt(2, numEtu);
-		preparedstatement.setInt(3, idPromo);
-		preparedstatement.setString(4, loginProf);
-		return preparedstatement.executeUpdate();
+	public static int insertEvaluation(String projectId, String loginProf, int numEtu, int idPromo) throws CSVSavingException {
+		try {
+			String insertEval =
+			"INSERT INTO EVALUATION "
+			+ "(PROJET_idProjet, ETUDIANT_numEtu, ETUDIANT_Promotion_idPromotion, PROFESSEUR_loginProfesseur ) " + 
+			"VALUES (?, ?, ?, ?);";
+			PreparedStatement preparedstatement = myqlco.prepareStatement(insertEval);
+			preparedstatement.setString(1,projectId);
+			preparedstatement.setInt(2, numEtu);
+			preparedstatement.setInt(3, idPromo);
+			preparedstatement.setString(4, loginProf);
+			return preparedstatement.executeUpdate();
+		} catch (SQLException e) {
+			throw new CSVSavingException(e);
+		}
 	}
 	
 	public static int updateNoteToEvaluation( double note, String projectId, String loginprof, int numEtu, int idPromo) throws SQLException {
@@ -163,23 +205,27 @@ public class MysqlRequest {
 		return preparedstatement.executeUpdate();
 	}
 	
-	public static int insertProfesseur(String login,String mailProfesseur, String password) throws SQLException, NoSuchAlgorithmException {
-		ResultSet rs = getProfesseurByLogin(login);
-		if(rs.isBeforeFirst()) {
-			updateProfesseur(login,mailProfesseur,password);
-		} else {
-			String encryptedPassword = EncryptingTools.clearTextToEncrypted(password, "SHA-256");
-			String insertProf =
-					"INSERT INTO PROFESSEUR "
-					+ "(loginProfesseur, mailProfesseur, passwdProfesseur) "
-					+ "VALUES (?, ?, ?);";
-			PreparedStatement preparedstatement = myqlco.prepareStatement(insertProf);
-			preparedstatement.setString(1, login.toLowerCase());
-			preparedstatement.setString(2, mailProfesseur);
-			preparedstatement.setString(3, encryptedPassword);
-			return preparedstatement.executeUpdate();
+	public static int insertProfesseur(String login,String mailProfesseur, String password) throws RegistrationException{
+		try {
+			ResultSet rs = getProfesseurByLogin(login);
+			if(rs.isBeforeFirst()) {
+				updateProfesseur(login,mailProfesseur,password);
+			} else {
+				String encryptedPassword = EncryptingTools.clearTextToEncrypted(password, "SHA-256");
+				String insertProf =
+						"INSERT INTO PROFESSEUR "
+						+ "(loginProfesseur, mailProfesseur, passwdProfesseur) "
+						+ "VALUES (?, ?, ?);";
+				PreparedStatement preparedstatement = myqlco.prepareStatement(insertProf);
+				preparedstatement.setString(1, login.toLowerCase());
+				preparedstatement.setString(2, mailProfesseur);
+				preparedstatement.setString(3, encryptedPassword);
+				return preparedstatement.executeUpdate();
+			}
+			return -1;
+		}catch (SQLException e) {
+			throw new RegistrationException(e);
 		}
-		return -1;
 	}
 	
 	
@@ -208,7 +254,7 @@ public class MysqlRequest {
 		return preparedstatement.executeUpdate();
 	}
 	
-	public static ResultSet getProjectNameByTeacher(Connection myqlco, String loginProfesseur) throws SQLException {
+	public static ResultSet getProjectNameByTeacher(String loginProfesseur) throws SQLException {
 		String request = "select PROJET.intituleProjet "
 				+ "FROM EVALUATION INNER JOIN PROFESSEUR INNER JOIN PROJET on "
 				+ "EVALUATION.PROFESSEUR_loginProfesseur = PROFESSEUR.loginProfesseur "
@@ -221,22 +267,24 @@ public class MysqlRequest {
 	}
 	
 	
-	public static ResultSet getEvaluationByLoginProjName(String loginProfesseur, String intituleProjet) throws SQLException {
-		String request = "SELECT * "
-				+ "FROM PROJET as proj "
-				+ "INNER JOIN EVALUATION as eval "
-				+ "ON proj.idProjet = eval.PROJET_idProjet "
-				+ "WHERE eval.PROFESSEUR_loginProfesseur = ? "
-				+ "and proj.intituleProjet = ? ;";
-		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(request);
-		preparedstatement.setString(1, loginProfesseur);
-		preparedstatement.setString(2, intituleProjet);
-		return preparedstatement.executeQuery();
-		
+	public static ResultSet getEvaluationByLoginProjName(String loginProfesseur, String intituleProjet) throws ProjectCreationException {
+		try {
+			String request = "SELECT * "
+					+ "FROM PROJET as proj "
+					+ "INNER JOIN EVALUATION as eval "
+					+ "ON proj.idProjet = eval.PROJET_idProjet "
+					+ "WHERE eval.PROFESSEUR_loginProfesseur = ? "
+					+ "and proj.intituleProjet = ? ;";
+			java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(request);
+			preparedstatement.setString(1, loginProfesseur);
+			preparedstatement.setString(2, intituleProjet);
+			return preparedstatement.executeQuery();
+		} catch (SQLException e) {
+			throw new ProjectCreationException(e);
+		}
 	}
 	
-	
-	public static ResultSet getEvaluation(Connection myqlco, String loginProfesseur, String intituleProjet) throws SQLException {
+	public static ResultSet getEvaluation(String loginProfesseur, String intituleProjet) throws SQLException {
 		String request = "SELECT * from PROJET AS p "
 				+ "INNER JOIN EVALUATION as eval "
 					+ "ON p.idProjet = eval.PROJET_idProjet "

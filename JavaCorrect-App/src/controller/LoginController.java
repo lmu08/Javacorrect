@@ -4,12 +4,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import db.MysqlRequest;
-import exceptions.AuthenticationException;
 import javafx.fxml.FXML;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Hyperlink;
-import javafx.scene.control.Label;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import tools.EncryptingTools;
@@ -28,30 +26,32 @@ public class LoginController {
 	}
 	
 	@FXML
-	public void handleLoginAction() throws AuthenticationException {
+	public void handleLoginAction() {
 		try {
 			final String username = usernameTextField.getText().toLowerCase();
 			final String password = passwordField.getText();
-			//TODO check in DB if ok
-			System.out.println(username);
 			final ResultSet rs = MysqlRequest.getProfesseurByLogin(username);
 			if (!rs.isBeforeFirst()) {
-				throw new AuthenticationException("Ce login n'existe pas");
+				final Alert alert = new Alert(AlertType.ERROR);
+				alert.setTitle("Echec de l'authentification");
+				alert.setContentText("Ce login n'existe pas");
+				alert.show();
 			} else {
-				System.out.println(username);
 				rs.next();
 				final String loginDb = rs.getString("loginProfesseur");
 				final String passwordDb = rs.getString("passwdProfesseur");
 				final String encryptedPassword = EncryptingTools.clearTextToEncrypted(password, "SHA-256");
-				
 				if (passwordDb.equals(encryptedPassword) && username.equals(loginDb)) {
 					windowManager.showMainView(username);
 				} else {
-					throw new AuthenticationException("Mot de passe invalide");
+					final Alert alert = new Alert(AlertType.ERROR);
+					alert.setTitle("Echec de l'authentification");
+					alert.setContentText("Mot de passe invalide");
+					alert.show();
 				}
 			}
 		} catch (final SQLException e) {
-			// TODO: handle exception
+			e.printStackTrace();
 			System.out.println(e.getSQLState());
 		}
 	}

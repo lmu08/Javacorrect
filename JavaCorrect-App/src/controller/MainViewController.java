@@ -7,29 +7,23 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
-import db.MysqlConnexion;
-import db.MysqlPropertiesParser;
 import db.MysqlRequest;
 import db.Student;
 import db.StudentCsvParser;
-import exceptions.DeadlineException;
 import exceptions.MarkingDbManagementException;
-import exceptions.ProjectDbManagementException;
-import exceptions.ProjectNameException;
-import exceptions.StudentClassroomException;
-import exceptions.StudentDbManagementException;
-import db.MysqlRequest;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -47,10 +41,11 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
-import tools.DateTools;
 
 public class MainViewController
 implements Initializable {
+	private static final String PROJECT_CREATION_ERROR = "Impossible de créer le projet";
+	private static final String SAVE_CSV_ERROR = "Impossible d'enregistrer le csv";
 	@FXML
 	private MenuItem logoutContextMenu;
 	@FXML
@@ -82,25 +77,33 @@ implements Initializable {
 	@FXML
 	private Button createProjectButton;
 	private String currentUser;
-	
+
 	@Override
 	public void initialize(final URL url, final ResourceBundle resourceBundle) {
-		projectNameButton.setItems(FXCollections.observableList(queryProjectNames()));
-		projectNameButton.setOnAction(event -> {
-				updateTable();
+		projectNameButton.setOnMouseClicked(event -> {
+			projectNameButton.getItems().clear();
+			projectNameButton.getItems().addAll(queryProjectNames());
 		});
-		
+		projectNameButton.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
+			@Override
+			public void changed(final ObservableValue<? extends String> observable, final String oldValue, final String newValue) {
+				if (newValue != null) {
+					updateTable();
+				}
+			}
+		});
+
 		studentNameColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, String>("studentName"));
 		studentIdColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, String>("studentId"));
 		markColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, Double>("mark"));
 		classroomColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, String>("classroom"));
 		sendDateColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, Date>("sendDate"));
-		
+
 		projectNameField.textProperty().addListener(event -> updateCreateProjectButton());
 		deadlineDatePicker.setEditable(false);
 		deadlineDatePicker.setOnAction(event -> updateCreateProjectButton());
 	}
-
+	
 	public void initUser(final WindowManager windowManager, final String login) {
 		this.currentUser = login;
 		logoutContextMenu.setOnAction(event -> {
@@ -108,50 +111,42 @@ implements Initializable {
 			alert.setTitle("Logout");
 			alert.setContentText("Are you sure you want to logout ?");
 			alert.showAndWait().filter(ButtonType.OK::equals).ifPresent(button -> windowManager.showLoginView());
-			
+
 		});
 		projectNameButton.setItems(FXCollections.observableList(queryProjectNames()));
 	}
-	
+
 	private List<String> queryProjectNames() {
-		//TODO get project names from database. IDs can be retrieved too, and added to MenuItem.userData if needed.
-		ArrayList<String> al = new ArrayList<String>();
-		java.sql.Connection mysqlco = MysqlConnexion.getInstance(MysqlPropertiesParser.getInstance());
+		final ArrayList<String> al = new ArrayList<>();
 		String projectName;
 		try {
-			ResultSet rs = MysqlRequest.getProjectNameByTeacher(mysqlco, this.currentUser);
-			while(rs.next()) {
+			final ResultSet rs = MysqlRequest.getProjectNameByTeacher(currentUser);
+			while (rs.next()) {
 				projectName = rs.getString("intituleProjet");
 				al.add(projectName);
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
+		} catch (final SQLException e) {
 			e.printStackTrace();
+			System.out.println(e.getSQLState());
 		}
-		
-		return al;
+		return al.stream().distinct().collect(Collectors.toList());
 	}
-	
+
 	public static final class StudentProject {
 		private final SimpleStringProperty studentName;
 		private final SimpleIntegerProperty studentId;
-		private final SimpleStringProperty classroom;
 		private final SimpleDoubleProperty mark;
 		private final SimpleObjectProperty<Date> sendDate;
-
-		public StudentProject(final String studentName,final Integer studentId, final String classroom, final Double mark, final Date sendDate) {
+		private final SimpleStringProperty classroom;
+		
+		public StudentProject(final String studentName, final Integer studentId, final String classroom, final Double mark, final Date sendDate) {
 			this.studentName = (studentName == null) ? new SimpleStringProperty() : new SimpleStringProperty(studentName);
 			this.studentId = (studentId == null) ? new SimpleIntegerProperty() : new SimpleIntegerProperty(studentId);
-			this.classroom = (classroom == null) ? new SimpleStringProperty() : new SimpleStringProperty(classroom);
 			this.mark = (mark == null) ? new SimpleDoubleProperty() : new SimpleDoubleProperty(mark);
 			this.sendDate = (sendDate == null) ? new SimpleObjectProperty<>() : new SimpleObjectProperty<>(sendDate);
-		
+			this.classroom = (classroom == null) ? new SimpleStringProperty() : new SimpleStringProperty(classroom);
 		}
-		
-		public String getClassroom() {
-			return classroom.get();
-		}
-		
+
 		public String getStudentName() {
 			return studentName.get();
 		}
@@ -167,58 +162,47 @@ implements Initializable {
 		public Date getSendDate() {
 			return sendDate.get();
 		}
-	}
-
-	private void updateTable(){
-		try {
-		studentProjectsTable.setItems(parseStudentProjectList());
-		deleteProjectButton.setDisable(false);
+		
+		public String getClassroom() {
+			return classroom.get();
 		}
-		catch(MarkingDbManagementException e) {
+	}
+	
+	private void updateTable() {
+		try {
+			studentProjectsTable.setItems(parseStudentProjectList());
+			deleteProjectButton.setDisable(false);
+		} catch (final MarkingDbManagementException e) {
 			e.printStackTrace();
 		}
 	}
-
-	private ObservableList<StudentProject> parseStudentProjectList() throws MarkingDbManagementException {
-		//TODO Get selected project and logged user + get students from DB + create the list
-		String nom;
-		int numEtu;
-		BigDecimal note;
-		String classe;
-		java.sql.Date dateEnvoi;
-		String intituleProjet = projectNameButton.getValue();
-		ArrayList<StudentProject> al = new ArrayList<StudentProject>();
-		java.sql.Connection mysqlco = MysqlConnexion.getInstance(MysqlPropertiesParser.getInstance());
+	
+	private ObservableList<StudentProject> parseStudentProjectList()
+	throws MarkingDbManagementException {
+		final String intituleProjet = projectNameButton.getValue();
+		final ArrayList<StudentProject> projets = new ArrayList<>();
 		try {
-			ResultSet rs = MysqlRequest.getEvaluation(mysqlco, this.currentUser, intituleProjet );
-			while(rs.next()) {
-				dateEnvoi = rs.getDate("EVALUATION_date_envoi");
-				nom = rs.getString("nomEtu") + " "+ rs.getString("prenomEtu");
-				
-				numEtu = rs.getInt("numEtu");
-				note = rs.getBigDecimal("EVALUATION_note");
-				classe = rs.getString("intituleClasse");
-				System.out.println(classe);
-				System.out.println(classe);
-				al.add(
-						new StudentProject(nom, numEtu, classe, note.doubleValue(), dateEnvoi)
-						);
+			final ResultSet rs = MysqlRequest.getEvaluation(currentUser, intituleProjet);
+			while (rs.next()) {
+				final Date dateEnvoi = rs.getDate("EVALUATION_date_envoi");
+				final String nom = rs.getString("nomEtu") + " " + rs.getString("prenomEtu");
+				final int numEtu = rs.getInt("numEtu");
+				final BigDecimal note = Optional.ofNullable(rs.getBigDecimal("EVALUATION_note")).orElse(new BigDecimal(-1));
+				final String classe = rs.getString("intituleClasse");
+				projets.add(new StudentProject(nom, numEtu, classe, note.doubleValue(), dateEnvoi));
 			}
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			throw new MarkingDbManagementException("Erreur lors de la récupération des données");
+		} catch (final SQLException e) {
+			System.out.println(e.getSQLState());
+			throw new MarkingDbManagementException("Erreur lors de la récupération des données", e);
 		}
-		// Sample :
-		return FXCollections.observableArrayList(
-			al);
+		return FXCollections.observableArrayList(projets);
 	}
-
+	
 	@FXML
 	private void handleDeleteProjectAction() {
 		//TODO Send delete request to DB + display response
 	}
-
+	
 	@FXML
 	private void handleSelectOutputAction() {
 		final FileChooser fileChooser = new FileChooser();
@@ -230,7 +214,7 @@ implements Initializable {
 			expectedOutputButton.setText(path);
 		});
 	}
-
+	
 	@FXML
 	private void handleSelectListAction() {
 		final FileChooser fileChooser = new FileChooser();
@@ -243,42 +227,70 @@ implements Initializable {
 		});
 		updateCreateProjectButton();
 	}
-	
+
 	@FXML
-	private void handleCreateProjectAction() throws ProjectNameException, StudentClassroomException, ProjectDbManagementException, DeadlineException, StudentDbManagementException, MarkingDbManagementException {
-		final String projectId = UUID.randomUUID() + "";
-		final String projectName = projectNameField.getText();
-		final LocalDate deadline = deadlineDatePicker.getValue();
-		final String arguments = argumentsField.getText();
-		final String expectedOutputPath = (String) expectedOutputButton.getUserData(); //TODO send to the server using a socket (scp temporarily)
-		ArrayList<Student> students;
-		StudentCsvParser sparser = new StudentCsvParser();
-		sparser.parse((String) studentListButton.getUserData());
-		students = sparser.getStudents();
-		String className = students.get(0).getClasse();
-		int classYear = students.get(0).getPromo();
-		ResultSet rspromo;
-		int idPromotion = -1;
-		
-		
-		if(DateTools.checkMinimumDeadlineDays(deadline,3) <0) {
-			throw new DeadlineException("L'échéance du projet doit être dans au moins 3 jours");
-		}
+	private void handleCreateProjectAction() {
+		//TODO send to the server using a socket (scp temporarily)
+		@SuppressWarnings("unused")
+		final String expectedOutputPath = (String) expectedOutputButton.getUserData();
 		
 		try {
-			ResultSet rs = MysqlRequest.getEvaluationByLoginProjName(this.currentUser, projectName);
-			if(rs.isBeforeFirst()) {
-				throw new ProjectNameException("Vous avez déjà crée un projet du même nom ");
+			//Create the project in db
+			final Optional<String> projectId = insertProject();
+			
+			if (projectId.isPresent()) {
+				try {
+					//Parse the student list and send it to db
+					insertCSV(projectId.get());
+					final Alert alert = new Alert(AlertType.INFORMATION);
+					alert.setHeaderText("Création réussie");
+					alert.setContentText("Le projet a été créé avec succès");
+					alert.show();
+				} catch (final SQLException e) {
+					e.printStackTrace();
+					System.out.println(e.getSQLState());
+					showWarning(SAVE_CSV_ERROR, "Une erreur serveur s'est produite lors de l'enregistrement du csv.");
+				}
+			}
+		} catch (final SQLException e) {
+			e.printStackTrace();
+			System.out.println(e.getSQLState());
+			showWarning(PROJECT_CREATION_ERROR, "Une erreur serveur s'est produite lors de la création du projet.");
+		}
+	}
+	
+	private Optional<String> insertProject()
+	throws SQLException {
+		final String projectId = UUID.randomUUID().toString();
+		final LocalDate deadline = deadlineDatePicker.getValue();
+		if (deadline.compareTo(LocalDate.now().plusDays(3)) < 0) {
+			showWarning(PROJECT_CREATION_ERROR, "L'échéance du projet doit être de 3 jours minimum.");
+		} else {
+			final String projectName = projectNameField.getText();
+			if (MysqlRequest.getEvaluationByLoginProjName(currentUser, projectName).isBeforeFirst()) {
+				showWarning(PROJECT_CREATION_ERROR, "Vous avez déjà créé un projet du même nom.");
+			} else {
+				final String arguments = argumentsField.getText();
+				MysqlRequest.insertProject(projectId, deadline, projectName, arguments);
+				return Optional.of(projectId);
 			}
 		}
-		catch(SQLException sqle) {
-			System.out.println(sqle.getSQLState());
-			throw new ProjectNameException("Erreur lors de la vérification du nom de projet ");
-		}
+		return Optional.empty();
+	}
+	
+	private void insertCSV(final String projectId)
+	throws SQLException {
+		final StudentCsvParser sparser = new StudentCsvParser();
+		sparser.parse((String) studentListButton.getUserData());
+		final ArrayList<Student> students = sparser.getStudents();
+		final String className = students.stream().findAny().map(Student::getClasse).orElse("");
+		final int classYear = students.stream().findAny().map(Student::getPromo).orElse(0);
+		int idPromotion = -1;
 		
-		try {
-			rspromo = MysqlRequest.getIdPromotionRequest(classYear, className);
-			if (!rspromo.isBeforeFirst()) {
+		if (className.isEmpty() || classYear == 0) {
+			showWarning(SAVE_CSV_ERROR, "La classe ou promotion spécifiée est invalide.");
+		} else {
+			if (!MysqlRequest.getIdPromotionRequest(classYear, className).isBeforeFirst()) {
 				ResultSet rsidClasse = MysqlRequest.getidClasseRequest(className);
 				if (!rsidClasse.isBeforeFirst()) {
 					MysqlRequest.insertClasse(className);
@@ -288,52 +300,25 @@ implements Initializable {
 				final int idClasse = rsidClasse.getInt("idClasse");
 				MysqlRequest.insertPromotion(classYear, idClasse);
 			}
-			rspromo = MysqlRequest.getIdPromotionRequest(classYear, className);
+			final ResultSet rspromo = MysqlRequest.getIdPromotionRequest(classYear, className);
 			rspromo.next();
 			idPromotion = rspromo.getInt("idPromotion");
-		}
-		catch(SQLException e) {
-			System.out.println(e.getSQLState());
-			throw new StudentClassroomException("Erreur sur la gestion des classes et promotions,"
-					+ " vérifiez ces colonnes dans votre csv");
-		}
-		try {
-			MysqlRequest.insertProject(projectId, deadline, projectName);
-		}
-		catch(SQLException e) {
-			throw new ProjectDbManagementException("Erreur lors de l'insertion du projet");
-		}
-		for(Student student : students) {
-			ResultSet rstudent;
-			try {
-				rstudent = MysqlRequest.getStudentByNum(student.getNumEtu());
-				if (!rstudent.isBeforeFirst()) {
-					MysqlRequest.insertStudent(
-							student.getNumEtu(),
-							student.getPrenom(),
-							student.getNom(),
-							idPromotion);
+			for (final Student student : students) {
+				if (!MysqlRequest.getStudentByNum(student.getNumEtu()).isBeforeFirst()) {
+					MysqlRequest.insertStudent(student.getNumEtu(), student.getPrenom(), student.getNom(), idPromotion);
 				}
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				System.out.println(e.getSQLState());
-				throw new StudentDbManagementException("Erreur lors de l'ajout des étudiants en base de données");
-			}
-			
-			try {
-				MysqlRequest.insertEvaluation(projectId, this.currentUser, student.getNumEtu(), idPromotion);
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				System.out.println(e.getSQLState());
-				throw new MarkingDbManagementException("Erreur lors de l'ajout des étudiants en base de données");
-				
+				MysqlRequest.insertEvaluation(projectId, currentUser, student.getNumEtu(), idPromotion);
 			}
 		}
-		
-		
-			
 	}
-
+	
+	private void showWarning(final String title, final String message) {
+		final Alert alert = new Alert(AlertType.WARNING);
+		alert.setHeaderText(title);
+		alert.setContentText(message);
+		alert.show();
+	}
+	
 	private void updateCreateProjectButton() {
 		createProjectButton.setDisable(projectNameField.getText().isEmpty() || deadlineDatePicker.getValue() == null || (String) studentListButton.getUserData() == null);
 	}

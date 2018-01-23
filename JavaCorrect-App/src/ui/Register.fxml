@@ -17,7 +17,6 @@
                <children>
                   <Hyperlink onAction="#handleOpenSignInAction" text="You already have an account ?" />
                </children>
-            <Hyperlink layoutX="68.0" layoutY="171.0" onAction="#handleOpenSignInAction" text="You already have an account ?" />
             </TextFlow>
          </children>
       </AnchorPane>
