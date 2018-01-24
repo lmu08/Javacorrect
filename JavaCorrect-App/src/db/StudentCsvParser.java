@@ -10,15 +10,15 @@ public class StudentCsvParser {
 	private String line = "";
 	private String className;
 	private int classYear = -1;
-	private Classroom classroom;
+	private StudentGroup studentGroup;
 	private final ArrayList<Student> students;
-	private final ArrayList<Classroom> classrooms;
-
+	private final ArrayList<StudentGroup> studentGroups;
+	
 	public StudentCsvParser() {
 		students = new ArrayList<>();
-		classrooms = new ArrayList<>();
+		studentGroups = new ArrayList<>();
 	}
-
+	
 	/**
 	 * Reads a CSV file.
 	 * the 1st column contains the student numbers</br>
@@ -42,36 +42,36 @@ public class StudentCsvParser {
 				final String studentemail = students[3];
 				final String currentClassName = students[4];
 				final int currentClassYear = Integer.parseInt(students[5]);
-
+				
 				if (this.className == null) {
 					this.className = currentClassName;
 				}
 				if (this.classYear == -1) {
 					this.classYear = currentClassYear;
 				}
-				
-				if(this.classroom == null) {
-					this.classroom = new Classroom(this.className, this.classYear);
+
+				if (this.studentGroup == null) {
+					this.studentGroup = new StudentGroup(this.className, this.classYear);
 				}
-				
+
 				if (!this.className.equals(currentClassName) || this.classYear != currentClassYear) {
 					this.className = currentClassName;
 					this.classYear = currentClassYear;
-					this.classroom = new Classroom(this.className, this.classYear);
-					this.classrooms.add(this.classroom);
+					this.studentGroup = new StudentGroup(this.className, this.classYear);
+					this.studentGroups.add(this.studentGroup);
 				}
-				this.students.add(new Student(studentLastName, studentFirstName, studentNum,studentemail, this.classroom));
+				this.students.add(new Student(studentLastName, studentFirstName, studentNum, studentemail, this.studentGroup));
 			}
 		} catch (final IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public ArrayList<Student> getStudents() {
 		return students;
 	}
-
-	public ArrayList<Classroom> getClassrooms() {
-		return classrooms;
+	
+	public ArrayList<StudentGroup> getStudentGroups() {
+		return studentGroups;
 	}
 }
