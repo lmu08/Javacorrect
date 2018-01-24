@@ -1,9 +1,5 @@
 package controller;
 
-import java.sql.Connection;
-
-import db.MysqlConnexion;
-import db.MysqlPropertiesParser;
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
@@ -13,32 +9,21 @@ public class Main
 extends Application {
 	
 	public static void main(final String[] args) {
-		final MysqlPropertiesParser properties = MysqlPropertiesParser.getInstance();
-		final Connection myqlco = MysqlConnexion.getInstance(properties);
-		
-		//	    MysqlPropertiesParser properties = new MysqlPropertiesParser();
-		//		Connection myqlco;
+		//		final String projectId = UUID.randomUUID() + "";
+		//		final LocalDate dateExpi = LocalDate.now();
+		//		final String projectName = "my awesome project";
+		//
 		//		try {
-		//			myqlco = MysqlConnexion.getInstance(properties);
-		//			String projectId = UUID.randomUUID()+"";
-		//			LocalDate dateExpi = LocalDate.now();
-		//			String projectName = "my awesome project";
-		//			try {
-		//				MysqlRequest.insertProfesseur(myqlco, "bonprof", "jeandelafontaine@upmc.fr", "mdp");
-		//				MysqlRequest.insertProject(myqlco, projectId, dateExpi, projectName);
-		//				MysqlRequest.getProject(myqlco, projectId);
-		//				new StudentCsvParser("/home/flo/Documents/JavaCorrect/Javacorrect/studentTest.csv");
-		//				MysqlRequest.insertEvaluation(myqlco, projectId, "Quoo2kae", 3514665, 1);
-		//				MysqlRequest.updateNoteToEvaluation(myqlco, 10.5, projectId, "Quoo2kae", 3514665, 1);
-		//			} catch (NoSuchAlgorithmException e) {
-		//				// TODO Auto-generated catch block
-		//				e.printStackTrace();
-		//			} catch (SQLException e) {
-		//				// TODO Auto-generated catch block
-		//				e.printStackTrace();
-		//			}
-		//		} catch (ClassNotFoundException e) {
-		//			// TODO Auto-generated catch block
+		//			MysqlRequest.insertProfesseur("bonprof", "jeandelafontaine@upmc.fr", "mdp");
+		//			MysqlRequest.insertProject(projectId, dateExpi, projectName, "arg0 arg1");
+		//			MysqlRequest.getProject(projectId);
+		//			final StudentCsvParser st = new StudentCsvParser();
+		//			st.parse("/home/lucas/git/Javacorrect/JavaCorrect-App/resources/studentTest.csv");
+		//
+		//			MysqlRequest.insertEvaluation(projectId, "bonprof", 3514665, 1);
+		//			MysqlRequest.updateNoteToEvaluation(11.5, projectId, "bonprof", 3514665, 1);
+		//			MysqlRequest.updateDateEnvoiToEvaluation(LocalDate.now(), projectId, "bonprof", 3514665, 1);
+		//		} catch (final SQLException e) {
 		//			e.printStackTrace();
 		//		}
 		Application.launch(args);
