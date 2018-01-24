@@ -8,14 +8,17 @@ import java.util.ArrayList;
 public class StudentCsvParser {
 	private static final String SEPARATOR = ",";
 	private String line = "";
-	private String className = null;
+	private String className;
 	private int classYear = -1;
+	private StudentGroup studentGroup;
 	private final ArrayList<Student> students;
-
+	private final ArrayList<StudentGroup> studentGroups;
+	
 	public StudentCsvParser() {
 		students = new ArrayList<>();
+		studentGroups = new ArrayList<>();
 	}
-
+	
 	/**
 	 * Reads a CSV file.
 	 * the 1st column contains the student numbers</br>
@@ -36,26 +39,39 @@ public class StudentCsvParser {
 				final int studentNum = Integer.parseInt(students[0]);
 				final String studentFirstName = students[1];
 				final String studentLastName = students[2];
+				final String studentemail = students[3];
+				final String currentClassName = students[4];
+				final int currentClassYear = Integer.parseInt(students[5]);
+				
+				if (this.className == null) {
+					this.className = currentClassName;
+				}
+				if (this.classYear == -1) {
+					this.classYear = currentClassYear;
+				}
 
-				if (className == null) {
-					className = students[3];
+				if (this.studentGroup == null) {
+					this.studentGroup = new StudentGroup(this.className, this.classYear);
 				}
-				if (classYear == -1) {
-					classYear = Integer.parseInt(students[4]);
+
+				if (!this.className.equals(currentClassName) || this.classYear != currentClassYear) {
+					this.className = currentClassName;
+					this.classYear = currentClassYear;
+					this.studentGroup = new StudentGroup(this.className, this.classYear);
+					this.studentGroups.add(this.studentGroup);
 				}
-				if (!students[3].equals(className) || Integer.parseInt(students[4]) != classYear) {
-					System.err.println("Warning : l'étudiant " + studentFirstName + " " + studentLastName + " n'a pas pu être ajouté" + " car sa classe ou promotion est différente de celle des autres");
-					System.out.println(classYear);
-					continue;
-				}
-				this.students.add(new Student(studentLastName, studentFirstName, studentNum, className, classYear));
+				this.students.add(new Student(studentLastName, studentFirstName, studentNum, studentemail, this.studentGroup));
 			}
 		} catch (final IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public ArrayList<Student> getStudents() {
 		return students;
+	}
+	
+	public ArrayList<StudentGroup> getStudentGroups() {
+		return studentGroups;
 	}
 }

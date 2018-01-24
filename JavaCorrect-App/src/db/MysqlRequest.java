@@ -96,8 +96,8 @@ public class MysqlRequest {
 			throw new CSVSavingException(e);
 		}
 	}
-
-	public static int insertPromotion(int anneePromotion, int idClasse) throws CSVSavingException {
+	public static int insertPromotion(final int anneePromotion, final int idClasse)
+	throws CSVSavingException {
 		try {
 			String insertRequest = "INSERT INTO PROMOTION " + "(anneePromotion, CLASSE_idClasse) VALUES " + "(?, ?);";
 			PreparedStatement preparedstatement = myqlco.prepareStatement(insertRequest);
@@ -109,28 +109,22 @@ public class MysqlRequest {
 		}
 	}
 
-	public static int insertStudent(int numEtu, String nomEtu, String prenomEtu,int  idPromotion) throws CSVSavingException {
-		try {
-			int res;
-			ResultSet rs = getStudentByNum(numEtu);
-			if(rs.isBeforeFirst()) {
-				res = updateStudent(numEtu, nomEtu, prenomEtu, idPromotion);
-			}
-			else {
-				String insertRequest = "INSERT INTO ETUDIANT " +
-						"(numEtu, nomEtu, prenomEtu, PROMOTION_idPromotion) VALUES "
-						+ "(?, ?, ?, ?);";
-				PreparedStatement preparedstatement = myqlco.prepareStatement(insertRequest);
-				preparedstatement.setInt(1, numEtu);
-				preparedstatement.setString(2, nomEtu);
-				preparedstatement.setString(3, prenomEtu);
-				preparedstatement.setInt(4, idPromotion);
-				res = preparedstatement.executeUpdate();
-			}
-			return res;
-		} catch (SQLException e) {
-			throw new CSVSavingException(e);
+	public static int insertStudent(final int numEtu, final String nomEtu, final String prenomEtu, final String emailEtu ,final int idPromotion)
+	throws SQLException {
+		int res;
+		ResultSet rs = getStudentByNum(numEtu);
+		if(rs.isBeforeFirst()) {
+			res = updateStudent(numEtu, nomEtu, prenomEtu, emailEtu,idPromotion);
 		}
+			final String insertRequest = "INSERT INTO ETUDIANT " + "(numEtu, nomEtu, prenomEtu, emailEtu ,PROMOTION_idPromotion) VALUES " + "(?, ?, ?, ?, ?);";
+			PreparedStatement preparedstatement = myqlco.prepareStatement(insertRequest);
+			preparedstatement.setInt(1, numEtu);
+			preparedstatement.setString(2, nomEtu);
+			preparedstatement.setString(3, prenomEtu);
+			preparedstatement.setString(4, emailEtu);
+			preparedstatement.setInt(5, idPromotion);
+			res = preparedstatement.executeUpdate();
+			return res;
 	}
 
 	public static int insertProject(String projectId ,LocalDate dateExpi, String projectName, String arguments) throws ProjectCreationException {
@@ -204,12 +198,13 @@ public class MysqlRequest {
 		System.out.println(preparedstatement.executeUpdate());
 		return preparedstatement.executeUpdate();
 	}
-	
-	public static int insertProfesseur(String login,String mailProfesseur, String password) throws RegistrationException{
+
+	public static int insertProfesseur(final String login, final String mailProfesseur, final String password)
+	throws RegistrationException {
 		try {
-			ResultSet rs = getProfesseurByLogin(login);
-			if(rs.isBeforeFirst()) {
-				updateProfesseur(login,mailProfesseur,password);
+			final ResultSet rs = getProfesseurByLogin(login);
+			if (rs.isBeforeFirst()) {
+				updateProfesseur(login, mailProfesseur, password);
 			} else {
 				String encryptedPassword = EncryptingTools.clearTextToEncrypted(password, "SHA-256");
 				String insertProf =
@@ -242,15 +237,14 @@ public class MysqlRequest {
 		return preparedstatement.executeUpdate();
 	}
 
-	public static int updateStudent(int numEtu, String nomEtu, String prenomEtu,int  idPromotion) throws SQLException {
-		String updatetRequest = "UPDATE ETUDIANT " +
-				"SET nomEtu = ?, prenomEtu = ?, PROMOTION_idPromotion = ?"
-				+ "WHERE numEtu= ? ;";
+	public static int updateStudent(final int numEtu, final String nomEtu, final String prenomEtu, final String emailEtu, final int idPromotion) throws SQLException {
+		final String updatetRequest = "UPDATE ETUDIANT " + "SET nomEtu = ?, prenomEtu = ?, emailEtu = ?, PROMOTION_idPromotion = ?" + "WHERE numEtu= ? ;";
 		PreparedStatement preparedstatement = myqlco.prepareStatement(updatetRequest);
 		preparedstatement.setString(1, nomEtu);
 		preparedstatement.setString(2, prenomEtu);
-		preparedstatement.setInt(3, idPromotion);
-		preparedstatement.setInt(4, numEtu);
+		preparedstatement.setString(3, emailEtu);
+		preparedstatement.setInt(4, idPromotion);
+		preparedstatement.setInt(5, numEtu);
 		return preparedstatement.executeUpdate();
 	}
 	
@@ -301,4 +295,5 @@ public class MysqlRequest {
 		preparedstatement.setString(2, intituleProjet);
 		return preparedstatement.executeQuery();
 	}
+
 }

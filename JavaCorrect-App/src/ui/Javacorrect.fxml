@@ -16,7 +16,8 @@
                     <columns>
                       <TableColumn fx:id="studentNameColumn" editable="false" prefWidth="171.0" text="Etudiant" />
                         <TableColumn fx:id="studentIdColumn" editable="false" prefWidth="117.0" text="Numéro" />
-                      <TableColumn fx:id="classroomColumn" editable="false" prefWidth="117.0" text="classe" />
+                      <TableColumn fx:id="studentEmailColumn" editable="false" prefWidth="200.0" text="Email" />
+                      <TableColumn fx:id="studentGroupColumn" editable="false" prefWidth="117.0" text="classe" />
                       <TableColumn fx:id="markColumn" editable="false" prefWidth="84.0" text="Note" />
                         <TableColumn fx:id="sendDateColumn" editable="false" prefWidth="127.0" text="Date d'envoi" />
                     </columns>
