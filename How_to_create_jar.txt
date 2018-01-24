@@ -1,8 +1,11 @@
-Création du fichier .jar pour le projet JavaCorrect-Serveur :
+A noter : La même version de java doit être utilisée pour compiler les fichiers java et générer les .jar
 
-Si le package "maven" n'est pas installé :
+
+### Création du fichier .jar pour le projet JavaCorrect-Serveur :
+
+Si le paquet "maven" n'est pas installé :
 sudo apt-get update
-sudo apt-get install maven
+sudo apt-get -y install maven
 
 Une fois que maven est installé :
 cd Javacorrect/JavaCorrect-Serveur/
@@ -11,18 +14,15 @@ cd target/
 java -jar gestionMail-0.0.1-SNAPSHOT-jar-with-dependencies.jar
 
 
-NOTE : Dans docker, on est "su" par défaut, donc pas besoin d'utiliser sudo.
 
-**A CONFIRMER**
+### Création du fichier .jar pour le projet JavaCorrect-App :
 
-Création du fichier .jar pour le projet JavaCorrect-App :
-
-Si le package "ant" n'est pas installé :
+Si le paquet "ant" n'est pas installé :
 sudo apt-get update
-sudo apt-get instal ant
+sudo apt-get -y install ant
 
 Une fois que ant est installé :
 cd Javacorrect/JavaCorrect-App/
-ant build.xml
+ant
 java -jar app.jar
 
