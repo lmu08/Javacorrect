@@ -1,3 +1,4 @@
 /bin/
 /JavaCorrect-App/resources/db.properties
 .classpath
+/target/

@@ -16,7 +16,7 @@ public class SendEmail {
 	public static void sendEmail(final String login, final String password, final String toEmail, final String subject,
 			final String body) {
 		final Properties props = new Properties();
-		props.put("mail.smtp.host", "smtp.mail.com");
+		props.put("mail.smtp.host", "smtp.gmail.com");
 		props.put("mail.smtp.port", "587");
 		props.put("mail.smtp.auth", "true");
 		props.put("mail.smtp.starttls.enable", "true");

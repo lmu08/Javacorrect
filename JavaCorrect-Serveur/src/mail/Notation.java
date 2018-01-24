@@ -26,9 +26,10 @@ public class Notation {
 	static Runtime runtime = Runtime.getRuntime();
 
 	public static void note(String compilDirectory, String numEtu, String idProjet, String args) throws Exception {
+
 		// le répertoi de l'étudiant
 		String etuDirectory = compilDirectory + "/" + numEtu + "/" + idProjet;
-		runtime.exec("./javacShell " + etuDirectory + " " + compilDirectory + " " + args);
+		runtime.exec("./javacShell " + etuDirectory + " " + compilDirectory);
 
 		String cmd = "diff -q " + compilDirectory + "/test" + compilDirectory + "/testEtu";
 
@@ -62,9 +63,6 @@ public class Notation {
 
 		BufferedReader br = new BufferedReader(fichiergraph);
 
-		// FileWriter fichiergraphe = new FileWriter(path, true);
-		// BufferedWriter output = new BufferedWriter(fichiergraphe);
-
 		Path path = Paths.get(Directory);
 		List<String> lines = Files.readAllLines(path);
 
@@ -81,23 +79,8 @@ public class Notation {
 				Files.write(path, lines);
 
 			}
-			// System.out.println("ligne : " + ligne);
-
 		}
 
 		br.close();
-		// output.close();
 	}
-
-	// public static void save(int x, String saveDirectory) throws IOException {
-	// Writer w = new PrintWriter(saveDirectory + "/log.txt");
-	// w.write("La note est : " + x + "\n");
-	// w.close();
-	//
-	// Path path = Paths.get("C:/test.txt");
-	// List<String> lines = Files.readAllLines(path);
-	// lines.add(3, "test"); // index 3: between 3rd and 4th line
-	// Files.write(path, lines);
-	// }
-
 }
