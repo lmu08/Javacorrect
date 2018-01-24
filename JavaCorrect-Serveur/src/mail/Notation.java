@@ -31,7 +31,7 @@ public class Notation {
 		String etuDirectory = compilDirectory + "/" + numEtu + "/" + idProjet;
 		runtime.exec("./javacShell " + etuDirectory + " " + compilDirectory);
 
-		String cmd = "diff -q " + compilDirectory + "/test" + compilDirectory + "/testEtu";
+		String cmd = "diff -q " + compilDirectory + "/test" + compilDirectory + "/testE";
 
 		if (diffFichier(cmd)) {
 			System.out.println("0");
@@ -47,7 +47,7 @@ public class Notation {
 	public static boolean diffFichier(String cmd) throws Exception {
 		Process proc = runtime.exec(cmd);
 		BufferedReader br = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-		String line;
+		System.out.println("br.ready :" + br.ready());
 		return br.ready();
 	}
 
@@ -55,9 +55,7 @@ public class Notation {
 			throws FileNotFoundException, IOException {
 
 		Directory = Directory + listeEtu;
-		String l = null, ligne = null;
-
-		int compt = 0;
+		String ligne = null;
 
 		FileReader fichiergraph = new FileReader(Directory);
 
@@ -68,8 +66,7 @@ public class Notation {
 
 		String newLigne = "";
 		while ((ligne = br.readLine()) != null) {
-			compt++;
-			if (ligne.endsWith("3603567")) {
+			if (ligne.endsWith(numEtu)) {
 				System.out.println("ligne : " + ligne);
 
 				newLigne = ligne + "," + note;
@@ -77,10 +74,8 @@ public class Notation {
 
 				lines.add(3, newLigne); // index 3: between 3rd and 4th line
 				Files.write(path, lines);
-
 			}
 		}
-
 		br.close();
 	}
 }

@@ -20,7 +20,7 @@ public class TestMail {
 	public static void main(final String[] args) {
 		System.out.println("Start");
 
-		// receiveEmail("java.correct@mail.com", "789@Upmc");
+		receiveEmail("java.correct@gmail.com", "789@Upmc");
 		// sendEmail("3603567", ".....", "amichi.katia@gmail.com", "titre", "message
 		// sans pièce joint");
 
@@ -31,7 +31,7 @@ public class TestMail {
 
 	public static void receiveEmail(final String login, final String password) {
 		final Properties properties = new Properties();
-		properties.put("mail.imap.host", "imap.mail.com");
+		properties.put("mail.imap.host", "imap.gmail.com");
 		properties.put("mail.imap.port", "993");
 		properties.put("mail.imap.auth", "true");
 		properties.put("mail.imap.ssl.enable", "true");
