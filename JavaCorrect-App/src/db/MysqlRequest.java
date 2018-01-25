@@ -295,5 +295,12 @@ public class MysqlRequest {
 		preparedstatement.setString(2, intituleProjet);
 		return preparedstatement.executeQuery();
 	}
+	
+	public static int deleteProjet(String intituleProjet) throws SQLException {
+		String request = "DELETE FROM PROJET where intituleProjet= ?";
+		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(request);
+		preparedstatement.setString(1, intituleProjet);
+		return preparedstatement.executeUpdate();
+	}
 
 }
