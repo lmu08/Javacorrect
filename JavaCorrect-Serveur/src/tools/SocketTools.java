@@ -7,7 +7,7 @@ import java.net.Socket;
 
 public class SocketTools {
 	private final static int TRUE = 1;
-	
+
 	public static boolean getBoolean(final int binaryInt) {
 		if (binaryInt == TRUE) {
 			return true;
@@ -15,7 +15,7 @@ public class SocketTools {
 			return false;
 		}
 	}
-	
+
 	public static void disconnect(final Socket c, final ServerSocket socket)
 	throws IOException {
 		if (c.isClosed()) {
@@ -27,11 +27,10 @@ public class SocketTools {
 			System.out.println("Serveur : Closing server socket");
 		}
 	}
-	
+
 	public static void delete(final File file)
 	throws IOException {
 		for (final File childFile : file.listFiles()) {
-			
 			if (childFile.isDirectory()) {
 				delete(childFile);
 			} else {

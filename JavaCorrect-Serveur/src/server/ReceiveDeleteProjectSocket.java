@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.TimeUnit;
 
 import tools.SocketTools;
 
@@ -13,7 +14,7 @@ public class ReceiveDeleteProjectSocket
 implements Runnable {
 
 	private final String outputfileBase;
-	final static String SEPARATOR = "/";
+	private final static String SEPARATOR = "/";
 
 	private final int port;
 	private ServerSocket socket;
@@ -26,23 +27,21 @@ implements Runnable {
 
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
 		try {
 			this.socket = new ServerSocket(this.port);
 			while (true) {
-				System.out.println("Serveur: en attente");
+				System.out.println("Serveur reception de requête de suppresion de projet: en attente");
 				this.c = this.socket.accept();
 				System.out.println("Serveur: Connexion établie");
 				receiveFile(c);
+				TimeUnit.SECONDS.sleep(1);
 			}
-		} catch (final IOException e) {
-			// TODO Auto-generated catch block
+		} catch (IOException | InterruptedException e) {
 			e.printStackTrace();
 		} finally {
 			try {
 				SocketTools.disconnect(this.c, this.socket);
 			} catch (final IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -74,6 +73,8 @@ implements Runnable {
 					System.out.println("Successfully deleted");
 					deleted = true;
 				}
+			} else {
+				deleted = true;
 			}
 		}
 		dos.writeInt((deleted) ? 1 : 0);

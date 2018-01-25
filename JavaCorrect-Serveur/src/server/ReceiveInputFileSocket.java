@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.TimeUnit;
 
 import tools.SocketTools;
 
@@ -24,7 +25,6 @@ implements Runnable {
 	ReceiveInputFileSocket(final int port, final String filePath) {
 		this.outputfileBase = filePath;
 		this.port = port;
-
 	}
 
 	@Override
@@ -32,13 +32,13 @@ implements Runnable {
 		try {
 			this.socket = new ServerSocket(this.port);
 			while (true) {
-				System.out.println("Serveur: en attente");
+				System.out.println("Reception de fichier d'entrée: en attente");
 				this.c = this.socket.accept();
 				System.out.println("Serveur: Connexion établie");
 				receiveFile(c);
-
+				TimeUnit.SECONDS.sleep(1);
 			}
-		} catch (final IOException e) {
+		} catch (IOException | InterruptedException e) {
 
 			e.printStackTrace();
 		} finally {
@@ -48,70 +48,57 @@ implements Runnable {
 				e.printStackTrace();
 			}
 		}
-
 	}
 
 	private void receiveFile(final Socket c)
 	throws IOException {
 		FileOutputStream fos;
-		final InputStream is = c.getInputStream();
-		final DataInputStream dis = new DataInputStream(is);
-		final DataOutputStream dos = new DataOutputStream(c.getOutputStream());
-
-		final byte repClientByte[] = new byte[36];
-		try {
-			is.read(repClientByte, 0, 36);
-		} catch (final IOException ioe) {
-
-			ioe.printStackTrace();
-		}
-		final String repClient = new String(repClientByte).toString();
-		final String outputFolder = this.outputfileBase + SEPARATOR + repClient;
-		final File dir = new File(outputFolder);
-		if (!dir.exists()) {
-			dir.mkdirs();
-		}
-		final String outputFile = outputFolder + SEPARATOR + "output.txt";
-
-		System.out.println(this.outputfileBase);
-		final int matches = repClient.matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}") ? 1 : 0;
-		dos.writeInt(matches);
-		final int sizeExcpected = dis.readInt();
-		System.out.println(sizeExcpected);
-
-		dos.writeInt(1);
-
-		fos = new FileOutputStream(outputFile);
-		final byte[] buffer = new byte[sizeExcpected];
-
-		final int filesize = sizeExcpected; // Send file size in separate msg
-		int read = 0;
-		int totalRead = 0;
-		int remaining = filesize;
-		while ((read = dis.read(buffer, 0, Math.min(buffer.length, remaining))) > 0) {
-			totalRead += read;
-			remaining -= read;
-			System.out.println("read " + totalRead + " bytes.");
-			fos.write(buffer, 0, read);
-		}
-		fos.close();
-
-		final File file = new File(outputFile);
-		final int wellTransfered = (file.length() == sizeExcpected) ? 1 : 0;
-		dos.writeInt(wellTransfered);
-
-	}
-
-	public void disconnect()
-	throws IOException {
-		if (this.c.isClosed()) {
-			this.c.close();
-			System.out.println("Serveur : Closing client socket");
-		}
-		if (!this.socket.isClosed()) {
-			this.socket.close();
-			System.out.println("Serveur : Closing server socket");
+		try (final InputStream is = c.getInputStream(); //
+		final DataInputStream dis = new DataInputStream(is); //
+		final DataOutputStream dos = new DataOutputStream(c.getOutputStream());) {
+			
+			final byte repClientByte[] = new byte[36];
+			try {
+				is.read(repClientByte, 0, 36);
+			} catch (final IOException ioe) {
+				
+				ioe.printStackTrace();
+			}
+			final String repClient = new String(repClientByte).toString();
+			final String outputFolder = this.outputfileBase + SEPARATOR + repClient;
+			final File dir = new File(outputFolder);
+			if (!dir.exists()) {
+				dir.mkdirs();
+			}
+			final String outputFile = outputFolder + SEPARATOR + "output.txt";
+			
+			System.out.println(this.outputfileBase);
+			final int matches = repClient.matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}") ? 1 : 0;
+			dos.writeInt(matches);
+			final int sizeExcpected = dis.readInt();
+			System.out.println(sizeExcpected);
+			
+			dos.writeInt(1);
+			
+			fos = new FileOutputStream(outputFile);
+			final byte[] buffer = new byte[sizeExcpected];
+			
+			final int filesize = sizeExcpected; // Send file size in separate msg
+			int read = 0;
+			int totalRead = 0;
+			int remaining = filesize;
+			while ((read = dis.read(buffer, 0, Math.min(buffer.length, remaining))) > 0) {
+				totalRead += read;
+				remaining -= read;
+				System.out.println("read " + totalRead + " bytes.");
+				fos.write(buffer, 0, read);
+			}
+			fos.close();
+			
+			final File file = new File(outputFile);
+			final int wellTransfered = (file.length() == sizeExcpected) ? 1 : 0;
+			dos.writeInt(wellTransfered);
 		}
 	}
-
+	
 }
