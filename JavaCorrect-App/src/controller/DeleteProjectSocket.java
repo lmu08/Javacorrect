@@ -16,15 +16,14 @@ implements Callable<Boolean> {
 	private final String projName;
 	private final int port;
 	private final String host;
-	Socket c;
-	boolean isConnected;
+	private Socket c;
+	private final boolean isConnected;
 	
 	DeleteProjectSocket(final String host, final int port, final String projName) {
 		this.projName = projName;
 		this.port = port;
 		this.host = host;
 		this.isConnected = false;
-		
 	}
 	
 	@Override

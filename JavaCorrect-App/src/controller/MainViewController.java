@@ -90,7 +90,7 @@ implements Initializable {
 	private Button createProjectButton;
 	private String currentUser;
 	private String host;
-	
+
 	@Override
 	public void initialize(final URL url, final ResourceBundle resourceBundle) {
 		projectNameButton.setOnMouseClicked(event -> {
@@ -105,21 +105,21 @@ implements Initializable {
 				}
 			}
 		});
-		
+
 		studentNameColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, String>("studentName"));
 		studentIdColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, String>("studentId"));
 		studentEmailColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, String>("studentEmail"));
 		markColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, Double>("mark"));
 		studentGroupColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, String>("studentGroup"));
 		sendDateColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, Date>("sendDate"));
-		
+
 		projectNameField.textProperty().addListener(event -> updateCreateProjectButton());
 		deadlineDatePicker.setEditable(false);
 		deadlineDatePicker.setOnAction(event -> updateCreateProjectButton());
 		argumentsField.textProperty().addListener(event -> updateCreateProjectButton());
 		this.host = "localhost";
 	}
-
+	
 	public void initUser(final WindowManager windowManager, final String login) {
 		this.currentUser = login;
 		logoutContextMenu.setOnAction(event -> {
@@ -127,11 +127,11 @@ implements Initializable {
 			alert.setTitle("Logout");
 			alert.setContentText("Are you sure you want to logout ?");
 			alert.showAndWait().filter(ButtonType.OK::equals).ifPresent(button -> windowManager.showLoginView());
-			
+
 		});
 		projectNameButton.setItems(FXCollections.observableList(queryProjectNames()));
 	}
-	
+
 	private List<String> queryProjectNames() {
 		final ArrayList<String> al = new ArrayList<>();
 		String projectName;
@@ -147,7 +147,7 @@ implements Initializable {
 		}
 		return al.stream().distinct().collect(Collectors.toList());
 	}
-	
+
 	public static final class StudentProject {
 		private final SimpleStringProperty studentName;
 		private final SimpleIntegerProperty studentId;
@@ -155,7 +155,7 @@ implements Initializable {
 		private final SimpleDoubleProperty mark;
 		private final SimpleObjectProperty<Date> sendDate;
 		private final SimpleStringProperty studentGroup;
-
+		
 		public StudentProject(final String studentName, final Integer studentId, final String studentEmail, final String studentGroup, final Double mark, final Date sendDate) {
 			this.studentName = (studentName == null) ? new SimpleStringProperty() : new SimpleStringProperty(studentName);
 			this.studentId = (studentId == null) ? new SimpleIntegerProperty() : new SimpleIntegerProperty(studentId);
@@ -164,32 +164,32 @@ implements Initializable {
 			this.sendDate = (sendDate == null) ? new SimpleObjectProperty<>() : new SimpleObjectProperty<>(sendDate);
 			this.studentGroup = (studentGroup == null) ? new SimpleStringProperty() : new SimpleStringProperty(studentGroup);
 		}
-		
+
 		public String getStudentName() {
 			return studentName.get();
 		}
-		
+
 		public int getStudentId() {
 			return studentId.get();
 		}
-
+		
 		public double getMark() {
 			return mark.get();
 		}
-
+		
 		public Date getSendDate() {
 			return sendDate.get();
 		}
-
+		
 		public String getStudentGroup() {
 			return studentGroup.get();
 		}
-
+		
 		public String getStudentEmail() {
 			return studentEmail.get();
 		}
 	}
-
+	
 	private void updateTable() {
 		try {
 			studentProjectsTable.setItems(parseStudentProjectList());
@@ -198,7 +198,7 @@ implements Initializable {
 			e.printStackTrace();
 		}
 	}
-
+	
 	private ObservableList<StudentProject> parseStudentProjectList()
 	throws MarkingDbManagementException {
 		final String intituleProjet = projectNameButton.getValue();
@@ -220,7 +220,7 @@ implements Initializable {
 		}
 		return FXCollections.observableArrayList(projets);
 	}
-
+	
 	@FXML
 	private void handleDeleteProjectAction() {
 		Alert alert = new Alert(AlertType.CONFIRMATION);
@@ -248,7 +248,7 @@ implements Initializable {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 					showWarning(DELETE_PROJECT_ERROR, "Erreur lors de la suppression du projet");
-
+					
 				}
 			}
 			updateTable();
@@ -258,7 +258,7 @@ implements Initializable {
 			alert.show();
 		}
 	}
-	
+
 	public boolean deleteProjectFiles(final String host, final int port, final String projName) {
 		final ExecutorService pool = Executors.newFixedThreadPool(1);
 		final Callable<Boolean> task = new DeleteProjectSocket(host, port, projName);
@@ -274,7 +274,7 @@ implements Initializable {
 		}
 		return bool;
 	}
-
+	
 	@FXML
 	private void handleSelectOutputAction() {
 		final FileChooser fileChooser = new FileChooser();
@@ -287,7 +287,7 @@ implements Initializable {
 		});
 		updateCreateProjectButton();
 	}
-
+	
 	@FXML
 	private void handleSelectListAction() {
 		final FileChooser fileChooser = new FileChooser();
@@ -300,16 +300,16 @@ implements Initializable {
 		});
 		updateCreateProjectButton();
 	}
-	
+
 	@FXML
 	private void handleCreateProjectAction() {
 		@SuppressWarnings("unused")
 		final String expectedOutputPath = (String) expectedOutputButton.getUserData();
-
+		
 		try {
 			//Create the project in db
 			final Optional<String> projectId = insertProject();
-
+			
 			if (projectId.isPresent()) {
 				try {
 					//Parse the student list and send it to db
@@ -320,7 +320,7 @@ implements Initializable {
 						alert.setContentText("Le projet a été créé avec succès");
 						alert.show();
 					}
-					
+
 				} catch (final SQLException e) {
 					e.printStackTrace();
 					System.out.println(e.getSQLState());
@@ -334,20 +334,13 @@ implements Initializable {
 		}
 	}
 
-	Thread.UncaughtExceptionHandler h = new Thread.UncaughtExceptionHandler() {
-		@Override
-		public void uncaughtException(final Thread th, final Throwable ex) {
-			System.out.println("Uncaught exception: " + ex);
-		}
-	};
-	
 	private boolean sendOutputFileProjet(final String serveur, final int port, final String projName) {
 		final String expectedOutputPath = (String) expectedOutputButton.getUserData();
 		final File fichier = new File(expectedOutputPath);
 		if (!fichier.exists()) {
 			showWarning(PROJECT_CREATION_ERROR, "Le fichier passé en paramètre n'existe pas");
 		}
-		
+
 		final ExecutorService pool = Executors.newFixedThreadPool(15);
 		final Callable<Boolean> task = new SendOutputFileSocket(serveur, port, expectedOutputPath, projName);
 		final Future<Boolean> future = pool.submit(task);
@@ -361,9 +354,9 @@ implements Initializable {
 			e.printStackTrace();
 		}
 		return bool;
-		
-	}
 
+	}
+	
 	private Optional<String> insertProject()
 	throws SQLException {
 		final String projectId = UUID.randomUUID().toString();
@@ -382,7 +375,7 @@ implements Initializable {
 		}
 		return Optional.empty();
 	}
-
+	
 	private void insertCSV(final String projectId)
 	throws SQLException {
 		final StudentCsvParser sparser = new StudentCsvParser();
@@ -411,14 +404,14 @@ implements Initializable {
 			MysqlRequest.insertEvaluation(projectId, currentUser, student.getNumEtu(), idPromotion);
 		}
 	}
-
+	
 	void showWarning(final String title, final String message) {
 		final Alert alert = new Alert(AlertType.WARNING);
 		alert.setHeaderText(title);
 		alert.setContentText(message);
 		alert.show();
 	}
-
+	
 	private void updateCreateProjectButton() {
 		createProjectButton.setDisable(projectNameField.getText().isEmpty() || deadlineDatePicker.getValue() == null || (String) studentListButton.getUserData() == null || (String) expectedOutputButton.getUserData() == null || argumentsField.getText().isEmpty());
 	}
