@@ -16,6 +16,7 @@ public class SocketTools {
 	}
 
 	public static void disconnect(Socket c) throws IOException {
+		System.out.println(c.isConnected());
 		if (c.isConnected()) {
 			c.close();
 		}

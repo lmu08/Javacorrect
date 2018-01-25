@@ -2,7 +2,6 @@ package controller;
 
 import java.io.File;
 import java.math.BigDecimal;
-import java.net.ConnectException;
 import java.net.URL;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -18,7 +17,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import db.MarkingDbManagementException;
@@ -53,6 +51,7 @@ import javafx.stage.FileChooser.ExtensionFilter;
 public class MainViewController
 implements Initializable {
 	private static final String PROJECT_CREATION_ERROR = "Impossible de créer le projet";
+	private static final String DELETE_PROJECT_ERROR = "Impossible de supprimer le projet";
 	private static final String SAVE_CSV_ERROR = "Impossible d'enregistrer le csv";
 	private static final String SEND_OUTPUTFILE_ERROR = "Impossible d'envoyer le fichier de sortie au serveur";
 	@FXML
@@ -89,7 +88,8 @@ implements Initializable {
 	private Button createProjectButton;
 	private String currentUser;
 	private String host;
-	private int port;
+	final private int portSendFile = 52112;
+	final private int portDeleteProject = 52113;
 	
 	@Override
 	public void initialize(final URL url, final ResourceBundle resourceBundle) {
@@ -118,7 +118,6 @@ implements Initializable {
 		deadlineDatePicker.setOnAction(event -> updateCreateProjectButton());
 		argumentsField.textProperty().addListener(event -> updateCreateProjectButton());
 		this.host = "localhost";
-		this.port = 52112;
 	}
 
 	public void initUser(final WindowManager windowManager, final String login) {
@@ -224,36 +223,62 @@ implements Initializable {
 
 	@FXML
 	private void handleDeleteProjectAction() {
-		final String intituleProjet = projectNameButton.getValue();
-//		MysqlRequest.get
-//		System.out.println(intituleProjet);
-//		final String expectedOutputPath = (String) expectedOutputButton.getUserData();
-//		File fichier = new File(expectedOutputPath);
-//		if(!fichier.exists()) {
-//			showWarning(PROJECT_CREATION_ERROR, "Le fichier passé en paramètre n'existe pas");
-//		}
-//		
-//		ExecutorService pool = Executors.newFixedThreadPool(15);
-//		Callable<Boolean> task= new SendOutputFileSocket(serveur, port, expectedOutputPath, projName);
-//		Future<Boolean> future = pool.submit(task);
-//		boolean bool = false;
-//		try {
-//			while(!future.isDone()) {
-//			}
-//			bool = future.get().booleanValue();
-//			if(!bool) {
-//				showWarning(SEND_OUTPUTFILE_ERROR, "erreur lors de la connexion au serveur ou de l'envoi");
-//			}
-//		} catch (InterruptedException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		} catch (ExecutionException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		return bool;
-		
-		//TODO Send delete request to DB + display response
+		Alert alert = new Alert(AlertType.CONFIRMATION);
+		alert.setHeaderText("Voulez-vous vraiment supprimer ce projet ");
+		alert.setContentText("ATTENTION : action irreversible");
+		Optional<ButtonType> result = alert.showAndWait();
+		if ((result.isPresent()) && (result.get() == ButtonType.OK)) {
+			String idProjet = null;
+			final String intituleProjet = projectNameButton.getValue();
+			try {
+				ResultSet rs = MysqlRequest.getProjetByIntitule(intituleProjet);
+				rs.next();
+				idProjet = rs.getString("idProjet");
+				System.out.println(idProjet);
+			} catch (SQLException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				showWarning(DELETE_PROJECT_ERROR, "Erreur lors de la récupération du projet en base de données");
+			}
+			if(deleteProjectFiles(this.host, this.portDeleteProject, idProjet)) {
+				try {
+					System.out.println("Suppression du projet en cours");
+					MysqlRequest.deleteProjet(idProjet);
+				} catch (SQLException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					showWarning(DELETE_PROJECT_ERROR, "Erreur lors de la suppression du projet");
+
+				}
+			}
+			updateTable();
+			alert = new Alert(AlertType.INFORMATION);
+			alert.setHeaderText("Suppression réussie");
+			alert.setContentText("Le projet a été supprimé avec succès");
+			alert.show();
+			}
+	}
+	
+	public boolean deleteProjectFiles(String host, int port, String projName) {		
+		ExecutorService pool = Executors.newFixedThreadPool(1);
+		Callable<Boolean> task= new DeleteProjectSocket(host, port, projName);
+		Future<Boolean> future = pool.submit(task);
+		boolean bool = false;
+		try {
+			while(!future.isDone()) {
+			}
+			bool = future.get().booleanValue();
+			if(!bool) {
+				showWarning(DELETE_PROJECT_ERROR, "erreur de suppression des fichiers associés sur le serveur");
+			}
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return bool;
 	}
 
 	@FXML
@@ -294,7 +319,7 @@ implements Initializable {
 			if (projectId.isPresent()) {
 				try {
 					//Parse the student list and send it to db
-					if(sendOutputFileProjet(this.host, this.port, projectId.get())) {
+					if(sendOutputFileProjet(this.host, this.portSendFile, projectId.get())) {
 						insertCSV(projectId.get());
 						final Alert alert = new Alert(AlertType.INFORMATION);
 						alert.setHeaderText("Création réussie");

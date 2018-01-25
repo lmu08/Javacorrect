@@ -48,9 +48,8 @@ public class DeleteProjectSocket implements Callable<Boolean> {
 		InputStream is = c.getInputStream();
 		DataInputStream dis = new DataInputStream(is);
 		OutputStream os = c.getOutputStream();
-
+		System.out.println("Envoi de au serveur");
 		os.write(this.projName.getBytes("UTF8"));
-		dis.readInt();
 		return (dis.readInt() == 1) ? true : false;
 	}
 

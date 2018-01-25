@@ -305,11 +305,11 @@ public class MysqlRequest {
 		return preparedstatement.executeUpdate();
 	}
 	
-	public static int getProjetByIntitule(String intituleProjet) throws SQLException {
-		String request = "DELETE FROM PROJET where intituleProjet= ?";
+	public static ResultSet getProjetByIntitule(String intituleProjet) throws SQLException {
+		String request = "SELECT * FROM PROJET where intituleProjet= ?";
 		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(request);
 		preparedstatement.setString(1, intituleProjet);
-		return preparedstatement.executeUpdate();
+		return preparedstatement.executeQuery();
 	}
 
 }

@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.concurrent.TimeUnit;
 
 import tools.SocketTools;
 
@@ -31,12 +32,13 @@ public class ReceiveInputFileSocket implements Runnable {
 		try {
 			this.socket = new ServerSocket(this.port);
 			while(true) {
-				System.out.println("Serveur: en attente");
+				System.out.println("Reception de fichier d'entrée: en attente");
 				this.c = this.socket.accept();
 				System.out.println("Serveur: Connexion établie");
 				receiveFile(c);
+				TimeUnit.SECONDS.sleep(1);
 			}
-		} catch (IOException e) {
+		} catch (IOException | InterruptedException e) {
 
 			e.printStackTrace();
 		}
