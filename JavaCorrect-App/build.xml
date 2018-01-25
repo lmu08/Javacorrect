@@ -2,24 +2,30 @@
 <project default="create_run_jar" name="JavaCorrect-App">
     <property name="dir.buildfile" value="."/>
     <property name="dir.jarfile" value="${dir.buildfile}"/>
-    <property name="lib" value="lib"/>
-    <target name="create_run_jar" depends="compile">
+    <property name="dir.lib" value="lib"/>
+    <property name="dir.bin" value="${dir.jarfile}/bin"/>
+    <target name="create_run_jar" depends="copy-hbm">
         <jar destfile="${dir.jarfile}/app.jar" filesetmanifest="mergewithoutmain">
             <manifest>
                 <attribute name="Main-Class" value="controller.Main"/>
                 <attribute name="Class-Path" value="."/>
             </manifest>
             <fileset dir="${dir.jarfile}/bin"/>
-            <zipfileset excludes="META-INF/*.SF" src="${lib}/mysql-connector-java-5.1.45-bin.jar"/>
+            <zipfileset excludes="META-INF/*.SF" src="${dir.lib}/mysql-connector-java-5.1.45-bin.jar"/>
         </jar>
     </target>
+    <target name="copy-hbm" depends="compile">
+        <copy todir="${dir.bin}/ui" >
+            <fileset dir="src/ui" includes="*.fxml" />
+        </copy>
+    </target>
     <target name="compile">  
-        <javac srcdir="." destdir="${dir.jarfile}/bin">  
+        <javac srcdir="." destdir="${dir.bin}">  
 	    <classpath>  
-	        <fileset dir="${lib}">
+	        <fileset dir="${dir.lib}">
 	    	<include name="**/*.jar" />
 	        </fileset>
            </classpath>
 	</javac>
-    </target>  
+    </target>
 </project>
