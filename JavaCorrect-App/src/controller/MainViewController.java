@@ -48,8 +48,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 
-public class MainViewController
-implements Initializable {
+public class MainViewController implements Initializable {
 	private static final String PROJECT_CREATION_ERROR = "Impossible de créer le projet";
 	private static final String SAVE_CSV_ERROR = "Impossible d'enregistrer le csv";
 	private static final String SEND_OUTPUTFILE_ERROR = "Impossible d'envoyer le fichier de sortie au serveur";
@@ -97,7 +96,8 @@ implements Initializable {
 		});
 		projectNameButton.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
 			@Override
-			public void changed(final ObservableValue<? extends String> observable, final String oldValue, final String newValue) {
+			public void changed(final ObservableValue<? extends String> observable, final String oldValue,
+					final String newValue) {
 				if (newValue != null) {
 					updateTable();
 				}
@@ -116,7 +116,7 @@ implements Initializable {
 		deadlineDatePicker.setOnAction(event -> updateCreateProjectButton());
 		argumentsField.textProperty().addListener(event -> updateCreateProjectButton());
 	}
-	
+
 	public void initUser(final WindowManager windowManager, final String login) {
 		this.currentUser = login;
 		logoutContextMenu.setOnAction(event -> {
@@ -152,14 +152,18 @@ implements Initializable {
 		private final SimpleDoubleProperty mark;
 		private final SimpleObjectProperty<Date> sendDate;
 		private final SimpleStringProperty studentGroup;
-		
-		public StudentProject(final String studentName, final Integer studentId, final String studentEmail, final String studentGroup, final Double mark, final Date sendDate) {
-			this.studentName = (studentName == null) ? new SimpleStringProperty() : new SimpleStringProperty(studentName);
+
+		public StudentProject(final String studentName, final Integer studentId, final String studentEmail,
+				final String studentGroup, final Double mark, final Date sendDate) {
+			this.studentName = (studentName == null) ? new SimpleStringProperty()
+					: new SimpleStringProperty(studentName);
 			this.studentId = (studentId == null) ? new SimpleIntegerProperty() : new SimpleIntegerProperty(studentId);
-			this.studentEmail = (studentEmail == null) ? new SimpleStringProperty() : new SimpleStringProperty(studentEmail);
+			this.studentEmail = (studentEmail == null) ? new SimpleStringProperty()
+					: new SimpleStringProperty(studentEmail);
 			this.mark = (mark == null) ? new SimpleDoubleProperty() : new SimpleDoubleProperty(mark);
 			this.sendDate = (sendDate == null) ? new SimpleObjectProperty<>() : new SimpleObjectProperty<>(sendDate);
-			this.studentGroup = (studentGroup == null) ? new SimpleStringProperty() : new SimpleStringProperty(studentGroup);
+			this.studentGroup = (studentGroup == null) ? new SimpleStringProperty()
+					: new SimpleStringProperty(studentGroup);
 		}
 
 		public String getStudentName() {
@@ -169,24 +173,24 @@ implements Initializable {
 		public int getStudentId() {
 			return studentId.get();
 		}
-		
+
 		public double getMark() {
 			return mark.get();
 		}
-		
+
 		public Date getSendDate() {
 			return sendDate.get();
 		}
-		
+
 		public String getStudentGroup() {
 			return studentGroup.get();
 		}
-		
+
 		public String getStudentEmail() {
 			return studentEmail.get();
 		}
 	}
-	
+
 	private void updateTable() {
 		try {
 			studentProjectsTable.setItems(parseStudentProjectList());
@@ -195,9 +199,8 @@ implements Initializable {
 			e.printStackTrace();
 		}
 	}
-	
-	private ObservableList<StudentProject> parseStudentProjectList()
-	throws MarkingDbManagementException {
+
+	private ObservableList<StudentProject> parseStudentProjectList() throws MarkingDbManagementException {
 		final String intituleProjet = projectNameButton.getValue();
 		final ArrayList<StudentProject> projets = new ArrayList<>();
 		try {
@@ -209,7 +212,8 @@ implements Initializable {
 				final int numEtu = rs.getInt("numEtu");
 				final BigDecimal note = rs.getBigDecimal("EVALUATION_note");
 				final String classe = rs.getString("intituleClasse");
-				projets.add(new StudentProject(nom, numEtu, mail, classe, (note != null ? note.doubleValue() : null), dateEnvoi));
+				projets.add(new StudentProject(nom, numEtu, mail, classe, (note != null ? note.doubleValue() : null),
+						dateEnvoi));
 			}
 		} catch (final SQLException e) {
 			System.out.println(e.getSQLState());
@@ -217,41 +221,46 @@ implements Initializable {
 		}
 		return FXCollections.observableArrayList(projets);
 	}
-	
+
 	@FXML
 	private void handleDeleteProjectAction() {
+
 		final String intituleProjet = projectNameButton.getValue();
-//		MysqlRequest.get
-//		System.out.println(intituleProjet);
-//		final String expectedOutputPath = (String) expectedOutputButton.getUserData();
-//		File fichier = new File(expectedOutputPath);
-//		if(!fichier.exists()) {
-//			showWarning(PROJECT_CREATION_ERROR, "Le fichier passé en paramètre n'existe pas");
-//		}
-//		
-//		ExecutorService pool = Executors.newFixedThreadPool(15);
-//		Callable<Boolean> task= new SendOutputFileSocket(serveur, port, expectedOutputPath, projName);
-//		Future<Boolean> future = pool.submit(task);
-//		boolean bool = false;
-//		try {
-//			while(!future.isDone()) {
-//			}
-//			bool = future.get().booleanValue();
-//			if(!bool) {
-//				showWarning(SEND_OUTPUTFILE_ERROR, "erreur lors de la connexion au serveur ou de l'envoi");
-//			}
-//		} catch (InterruptedException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		} catch (ExecutionException e) {
-//			// TODO Auto-generated catch block
-//			e.printStackTrace();
-//		}
-//		return bool;
-		
-		//TODO Send delete request to DB + display response
+		// MysqlRequest.get
+		// System.out.println(intituleProjet);
+		// final String expectedOutputPath = (String)
+		// expectedOutputButton.getUserData();
+		// File fichier = new File(expectedOutputPath);
+		// if(!fichier.exists()) {
+		// showWarning(PROJECT_CREATION_ERROR, "Le fichier passé en paramètre n'existe
+		// pas");
+		// }
+		//
+		// ExecutorService pool = Executors.newFixedThreadPool(15);
+		// Callable<Boolean> task= new SendOutputFileSocket(serveur, port,
+		// expectedOutputPath, projName);
+		// Future<Boolean> future = pool.submit(task);
+		// boolean bool = false;
+		// try {
+		// while(!future.isDone()) {
+		// }
+		// bool = future.get().booleanValue();
+		// if(!bool) {
+		// showWarning(SEND_OUTPUTFILE_ERROR, "erreur lors de la connexion au serveur ou
+		// de l'envoi");
+		// }
+		// } catch (InterruptedException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// } catch (ExecutionException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
+		// return bool;
+
+		// TODO Send delete request to DB + display response
 	}
-	
+
 	@FXML
 	private void handleSelectOutputAction() {
 		final FileChooser fileChooser = new FileChooser();
@@ -264,7 +273,7 @@ implements Initializable {
 		});
 		updateCreateProjectButton();
 	}
-	
+
 	@FXML
 	private void handleSelectListAction() {
 		final FileChooser fileChooser = new FileChooser();
@@ -282,14 +291,14 @@ implements Initializable {
 	private void handleCreateProjectAction() {
 		@SuppressWarnings("unused")
 		final String expectedOutputPath = (String) expectedOutputButton.getUserData();
-		
+
 		try {
-			//Create the project in db
+			// Create the project in db
 			final Optional<String> projectId = insertProject();
-			
+
 			if (projectId.isPresent()) {
 				try {
-					//Parse the student list and send it to db
+					// Parse the student list and send it to db
 					if (sendOutputFileProjet(this.host, this.port, projectId.get())) {
 						insertCSV(projectId.get());
 						final Alert alert = new Alert(AlertType.INFORMATION);
@@ -339,9 +348,8 @@ implements Initializable {
 		return bool;
 
 	}
-	
-	private Optional<String> insertProject()
-	throws SQLException {
+
+	private Optional<String> insertProject() throws SQLException {
 		final String projectId = UUID.randomUUID().toString();
 		final LocalDate deadline = deadlineDatePicker.getValue();
 		if (deadline.compareTo(LocalDate.now().plusDays(3)) < 0) {
@@ -358,15 +366,15 @@ implements Initializable {
 		}
 		return Optional.empty();
 	}
-	
-	private void insertCSV(final String projectId)
-	throws SQLException {
+
+	private void insertCSV(final String projectId) throws SQLException {
 		final StudentCsvParser sparser = new StudentCsvParser();
 		sparser.parse((String) studentListButton.getUserData());
 		final ArrayList<Student> students = sparser.getStudents();
 		final ArrayList<StudentGroup> studentGroups = sparser.getStudentGroups();
 		for (final StudentGroup studentGroup : studentGroups) {
-			if (!MysqlRequest.getIdPromotionRequest(studentGroup.getYear(), studentGroup.getStudentGroup()).isBeforeFirst()) {
+			if (!MysqlRequest.getIdPromotionRequest(studentGroup.getYear(), studentGroup.getStudentGroup())
+					.isBeforeFirst()) {
 				if (!MysqlRequest.getidClasseRequest(studentGroup.getStudentGroup()).isBeforeFirst()) {
 					MysqlRequest.insertClasse(studentGroup.getStudentGroup());
 				}
@@ -378,25 +386,30 @@ implements Initializable {
 		for (final Student student : students) {
 			System.out.println(student.getStudentGroup().toString());
 			System.out.println(student.getStudentGroup().getStudentGroup());
-			final ResultSet rspromo = MysqlRequest.getIdPromotionRequest(student.getStudentGroup().getYear(), student.getStudentGroup().getStudentGroup());
+			final ResultSet rspromo = MysqlRequest.getIdPromotionRequest(student.getStudentGroup().getYear(),
+					student.getStudentGroup().getStudentGroup());
 			rspromo.next();
 			final int idPromotion = rspromo.getInt("idPromotion");
+			final String idEtu = rspromo.getString("idEtu");
 			if (!MysqlRequest.getStudentByNum(student.getNumEtu()).isBeforeFirst()) {
-				
-				MysqlRequest.insertStudent(student.getNumEtu(), student.getPrenom(), student.getNom(), student.getEmail(), idPromotion);
+
+				MysqlRequest.insertStudent(student.getNumEtu(), student.getPrenom(), student.getNom(),
+						student.getEmail(), idPromotion, idEtu);
 			}
 			MysqlRequest.insertEvaluation(projectId, currentUser, student.getNumEtu(), idPromotion);
 		}
 	}
-	
+
 	void showWarning(final String title, final String message) {
 		final Alert alert = new Alert(AlertType.WARNING);
 		alert.setHeaderText(title);
 		alert.setContentText(message);
 		alert.show();
 	}
-	
+
 	private void updateCreateProjectButton() {
-		createProjectButton.setDisable(projectNameField.getText().isEmpty() || deadlineDatePicker.getValue() == null || (String) studentListButton.getUserData() == null || (String) expectedOutputButton.getUserData() == null || argumentsField.getText().isEmpty());
+		createProjectButton.setDisable(projectNameField.getText().isEmpty() || deadlineDatePicker.getValue() == null
+				|| (String) studentListButton.getUserData() == null
+				|| (String) expectedOutputButton.getUserData() == null || argumentsField.getText().isEmpty());
 	}
 }
