@@ -106,6 +106,7 @@ implements Initializable {
 		projectNameField.textProperty().addListener(event -> updateCreateProjectButton());
 		deadlineDatePicker.setEditable(false);
 		deadlineDatePicker.setOnAction(event -> updateCreateProjectButton());
+		argumentsField.textProperty().addListener(event -> updateCreateProjectButton());
 	}
 
 	public void initUser(final WindowManager windowManager, final String login) {
@@ -224,6 +225,7 @@ implements Initializable {
 			expectedOutputButton.setUserData(path);
 			expectedOutputButton.setText(path);
 		});
+		updateCreateProjectButton();
 	}
 
 	@FXML
@@ -327,6 +329,6 @@ implements Initializable {
 	}
 
 	private void updateCreateProjectButton() {
-		createProjectButton.setDisable(projectNameField.getText().isEmpty() || deadlineDatePicker.getValue() == null || (String) studentListButton.getUserData() == null);
+		createProjectButton.setDisable(projectNameField.getText().isEmpty() || deadlineDatePicker.getValue() == null || (String) studentListButton.getUserData() == null || (String) expectedOutputButton.getUserData() == null || argumentsField.getText().isEmpty());
 	}
 }
