@@ -23,7 +23,7 @@ public class ReceiveInputFileSocket implements Runnable {
 	ReceiveInputFileSocket(int port, String filePath) {
 		this.outputfileBase = filePath;
 		this.port = port;
-		
+
 	}
 
 	@Override
@@ -31,17 +31,17 @@ public class ReceiveInputFileSocket implements Runnable {
 		// TODO Auto-generated method stub
 		try {
 			this.socket = new ServerSocket(this.port);
-			while(true) {
+			while (true) {
 				System.out.println("Serveur: en attente");
 				this.c = this.socket.accept();
 				System.out.println("Serveur: Connexion établie");
 				receiveFile(c);
+
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		finally {
+		} finally {
 			try {
 				this.disconnect();
 			} catch (IOException e) {
@@ -106,12 +106,13 @@ public class ReceiveInputFileSocket implements Runnable {
 		dos.writeInt(wellTransfered);
 
 	}
+
 	public void disconnect() throws IOException {
-		if(this.c.isClosed()) {
+		if (this.c.isClosed()) {
 			this.c.close();
 			System.out.println("Serveur : Closing client socket");
 		}
-		if(!this.socket.isClosed()) {
+		if (!this.socket.isClosed()) {
 			this.socket.close();
 			System.out.println("Serveur : Closing server socket");
 		}
