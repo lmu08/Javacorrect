@@ -8,13 +8,13 @@ import db.MysqlRequest;
 import mail.SendEmail;
 
 public class MailCreation {
-	
-	public void mailCreation(final String idProjet)
+
+	public static void mailCreation(final String idProjet)
 	throws SQLException {
 		//FIXME check this
 		final ResultSet listEmail = MysqlRequest.getEmailByidProjet(idProjet);
 		final Date dateExpi = (Date) MysqlRequest.getDateExpiByidProjet(idProjet);
-		
+
 		while (listEmail.next()) {
 			final String email = listEmail.getString("emailEtu");
 			final ResultSet idEtu = MysqlRequest.getidEtuByEmail(email);

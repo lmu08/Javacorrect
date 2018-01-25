@@ -14,6 +14,8 @@ public class Notation {
 	
 	// static String saveDirectory = "/home/katy/projet/";
 	
+	private static final Runtime RUNTIME = Runtime.getRuntime();
+	
 	/**
 	 * noter les devoir des étudiants
 	 *
@@ -23,14 +25,11 @@ public class Notation {
 	 *        numéro de l'étudiant a noté
 	 * @throws IOException
 	 */
-	static Runtime runtime = Runtime.getRuntime();
-	
 	public static void note(final String compilDirectory, final String numEtu, final String idProjet, final String args)
 	throws Exception {
-		
 		// le répertoi de l'étudiant
 		final String etuDirectory = compilDirectory + "/" + numEtu + "/" + idProjet;
-		runtime.exec("./javacShell " + etuDirectory + " " + compilDirectory);
+		RUNTIME.exec("./javacShell " + etuDirectory + " " + compilDirectory);
 		
 		final String cmd = "diff -q " + compilDirectory + "/test" + compilDirectory + "/testEtu";
 		
@@ -41,32 +40,27 @@ public class Notation {
 			System.out.println("20");
 			ecrir_ligne_fichier(compilDirectory, numEtu, 20, "/listeEtu.csv");
 		}
-		
 	}
 	
 	// br2 reçois true si les fichier sont déffirents / false dans le cas contraire
 	public static boolean diffFichier(final String cmd)
 	throws Exception {
-		final Process proc = runtime.exec(cmd);
+		final Process proc = RUNTIME.exec(cmd);
 		final BufferedReader br = new BufferedReader(new InputStreamReader(proc.getInputStream()));
 		final String line;
 		return br.ready();
 	}
 	
-	public static void ecrir_ligne_fichier(String Directory, final String numEtu, final int note, final String listeEtu)
+	public static void ecrir_ligne_fichier(final String directory, final String numEtu, final int note, final String listeEtu)
 	throws FileNotFoundException, IOException {
-		
-		Directory = Directory + listeEtu;
+		final String directory2 = directory + listeEtu;
 		final String l = null;
 		String ligne = null;
-		
 		int compt = 0;
 		
-		final FileReader fichiergraph = new FileReader(Directory);
-		
+		final FileReader fichiergraph = new FileReader(directory2);
 		final BufferedReader br = new BufferedReader(fichiergraph);
-		
-		final Path path = Paths.get(Directory);
+		final Path path = Paths.get(directory2);
 		final List<String> lines = Files.readAllLines(path);
 		
 		String newLigne = "";
@@ -74,16 +68,12 @@ public class Notation {
 			compt++;
 			if (ligne.endsWith("3603567")) {
 				System.out.println("ligne : " + ligne);
-				
 				newLigne = ligne + "," + note;
 				System.out.println("newLigne : " + newLigne);
-				
 				lines.add(3, newLigne); // index 3: between 3rd and 4th line
 				Files.write(path, lines);
-				
 			}
 		}
-		
 		br.close();
 	}
 }
