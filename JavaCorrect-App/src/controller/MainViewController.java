@@ -54,6 +54,8 @@ implements Initializable {
 	private static final String DELETE_PROJECT_ERROR = "Impossible de supprimer le projet";
 	private static final String SAVE_CSV_ERROR = "Impossible d'enregistrer le csv";
 	private static final String SEND_OUTPUTFILE_ERROR = "Impossible d'envoyer le fichier de sortie au serveur";
+	private static final int SEND_FILE_PORT = 52112;
+	private static final int DELETE_PROJECT_PORT = 52113;
 	@FXML
 	private MenuItem logoutContextMenu;
 	@FXML
@@ -88,8 +90,6 @@ implements Initializable {
 	private Button createProjectButton;
 	private String currentUser;
 	private String host;
-	final private int portSendFile = 52112;
-	final private int portDeleteProject = 52113;
 	
 	@Override
 	public void initialize(final URL url, final ResourceBundle resourceBundle) {
@@ -226,25 +226,25 @@ implements Initializable {
 		Alert alert = new Alert(AlertType.CONFIRMATION);
 		alert.setHeaderText("Voulez-vous vraiment supprimer ce projet ");
 		alert.setContentText("ATTENTION : action irreversible");
-		Optional<ButtonType> result = alert.showAndWait();
+		final Optional<ButtonType> result = alert.showAndWait();
 		if ((result.isPresent()) && (result.get() == ButtonType.OK)) {
 			String idProjet = null;
 			final String intituleProjet = projectNameButton.getValue();
 			try {
-				ResultSet rs = MysqlRequest.getProjetByIntitule(intituleProjet);
+				final ResultSet rs = MysqlRequest.getProjetByIntitule(intituleProjet);
 				rs.next();
 				idProjet = rs.getString("idProjet");
 				System.out.println(idProjet);
-			} catch (SQLException e) {
+			} catch (final SQLException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 				showWarning(DELETE_PROJECT_ERROR, "Erreur lors de la récupération du projet en base de données");
 			}
-			if(deleteProjectFiles(this.host, this.portDeleteProject, idProjet)) {
+			if (deleteProjectFiles(this.host, DELETE_PROJECT_PORT, idProjet)) {
 				try {
 					System.out.println("Suppression du projet en cours");
 					MysqlRequest.deleteProjet(idProjet);
-				} catch (SQLException e) {
+				} catch (final SQLException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 					showWarning(DELETE_PROJECT_ERROR, "Erreur lors de la suppression du projet");
@@ -256,26 +256,20 @@ implements Initializable {
 			alert.setHeaderText("Suppression réussie");
 			alert.setContentText("Le projet a été supprimé avec succès");
 			alert.show();
-			}
+		}
 	}
 	
-	public boolean deleteProjectFiles(String host, int port, String projName) {		
-		ExecutorService pool = Executors.newFixedThreadPool(1);
-		Callable<Boolean> task= new DeleteProjectSocket(host, port, projName);
-		Future<Boolean> future = pool.submit(task);
+	public boolean deleteProjectFiles(final String host, final int port, final String projName) {
+		final ExecutorService pool = Executors.newFixedThreadPool(1);
+		final Callable<Boolean> task = new DeleteProjectSocket(host, port, projName);
+		final Future<Boolean> future = pool.submit(task);
 		boolean bool = false;
 		try {
-			while(!future.isDone()) {
-			}
 			bool = future.get().booleanValue();
-			if(!bool) {
+			if (!bool) {
 				showWarning(DELETE_PROJECT_ERROR, "erreur de suppression des fichiers associés sur le serveur");
 			}
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ExecutionException e) {
-			// TODO Auto-generated catch block
+		} catch (final InterruptedException | ExecutionException e) {
 			e.printStackTrace();
 		}
 		return bool;
@@ -319,7 +313,7 @@ implements Initializable {
 			if (projectId.isPresent()) {
 				try {
 					//Parse the student list and send it to db
-					if(sendOutputFileProjet(this.host, this.portSendFile, projectId.get())) {
+					if (sendOutputFileProjet(this.host, SEND_FILE_PORT, projectId.get())) {
 						insertCSV(projectId.get());
 						final Alert alert = new Alert(AlertType.INFORMATION);
 						alert.setHeaderText("Création réussie");
@@ -341,34 +335,29 @@ implements Initializable {
 	}
 
 	Thread.UncaughtExceptionHandler h = new Thread.UncaughtExceptionHandler() {
-	    public void uncaughtException(Thread th, Throwable ex) {
-	        System.out.println("Uncaught exception: " + ex);
-	    }
+		@Override
+		public void uncaughtException(final Thread th, final Throwable ex) {
+			System.out.println("Uncaught exception: " + ex);
+		}
 	};
 	
-	private boolean sendOutputFileProjet(String serveur, int port ,String projName){
+	private boolean sendOutputFileProjet(final String serveur, final int port, final String projName) {
 		final String expectedOutputPath = (String) expectedOutputButton.getUserData();
-		File fichier = new File(expectedOutputPath);
-		if(!fichier.exists()) {
+		final File fichier = new File(expectedOutputPath);
+		if (!fichier.exists()) {
 			showWarning(PROJECT_CREATION_ERROR, "Le fichier passé en paramètre n'existe pas");
 		}
 		
-		ExecutorService pool = Executors.newFixedThreadPool(15);
-		Callable<Boolean> task= new SendOutputFileSocket(serveur, port, expectedOutputPath, projName);
-		Future<Boolean> future = pool.submit(task);
+		final ExecutorService pool = Executors.newFixedThreadPool(15);
+		final Callable<Boolean> task = new SendOutputFileSocket(serveur, port, expectedOutputPath, projName);
+		final Future<Boolean> future = pool.submit(task);
 		boolean bool = false;
 		try {
-			while(!future.isDone()) {
-			}
 			bool = future.get().booleanValue();
-			if(!bool) {
+			if (!bool) {
 				showWarning(SEND_OUTPUTFILE_ERROR, "erreur lors de la connexion au serveur ou de l'envoi");
 			}
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ExecutionException e) {
-			// TODO Auto-generated catch block
+		} catch (final InterruptedException | ExecutionException e) {
 			e.printStackTrace();
 		}
 		return bool;
@@ -416,13 +405,12 @@ implements Initializable {
 			final ResultSet rspromo = MysqlRequest.getIdPromotionRequest(student.getStudentGroup().getYear(), student.getStudentGroup().getStudentGroup());
 			rspromo.next();
 			final int idPromotion = rspromo.getInt("idPromotion");
-				if (!MysqlRequest.getStudentByNum(student.getNumEtu()).isBeforeFirst()) {
-					
-					MysqlRequest.insertStudent(student.getNumEtu(), student.getPrenom(), student.getNom(), student.getEmail() ,idPromotion);
-				}
-				MysqlRequest.insertEvaluation(projectId, currentUser, student.getNumEtu(), idPromotion);
+			if (!MysqlRequest.getStudentByNum(student.getNumEtu()).isBeforeFirst()) {
+				MysqlRequest.insertStudent(student.getNumEtu(), student.getPrenom(), student.getNom(), student.getEmail(), idPromotion, UUID.randomUUID().toString());
 			}
+			MysqlRequest.insertEvaluation(projectId, currentUser, student.getNumEtu(), idPromotion);
 		}
+	}
 
 	void showWarning(final String title, final String message) {
 		final Alert alert = new Alert(AlertType.WARNING);
