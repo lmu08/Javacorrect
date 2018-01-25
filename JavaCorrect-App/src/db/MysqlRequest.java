@@ -6,6 +6,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.UUID;
 
 import db.CSVSavingException;
 import db.ProjectCreationException;
@@ -116,13 +117,14 @@ public class MysqlRequest {
 		if(rs.isBeforeFirst()) {
 			res = updateStudent(numEtu, nomEtu, prenomEtu, emailEtu,idPromotion);
 		}
-			final String insertRequest = "INSERT INTO ETUDIANT " + "(numEtu, nomEtu, prenomEtu, emailEtu ,PROMOTION_idPromotion) VALUES " + "(?, ?, ?, ?, ?);";
+			final String insertRequest = "INSERT INTO ETUDIANT " + "(numEtu, nomEtu, prenomEtu, emailEtu ,PROMOTION_idPromotion, idEtu) VALUES " + "(?, ?, ?, ?, ?, ?);";
 			PreparedStatement preparedstatement = myqlco.prepareStatement(insertRequest);
 			preparedstatement.setInt(1, numEtu);
 			preparedstatement.setString(2, nomEtu);
 			preparedstatement.setString(3, prenomEtu);
 			preparedstatement.setString(4, emailEtu);
 			preparedstatement.setInt(5, idPromotion);
+			preparedstatement.setString(6, String.valueOf(UUID.randomUUID()));
 			res = preparedstatement.executeUpdate();
 			return res;
 	}
@@ -296,7 +298,14 @@ public class MysqlRequest {
 		return preparedstatement.executeQuery();
 	}
 	
-	public static int deleteProjet(String intituleProjet) throws SQLException {
+	public static int deleteProjet(String idProjet) throws SQLException {
+		String request = "DELETE FROM PROJET where idProjet= ?";
+		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(request);
+		preparedstatement.setString(1, idProjet);
+		return preparedstatement.executeUpdate();
+	}
+	
+	public static int getProjetByIntitule(String intituleProjet) throws SQLException {
 		String request = "DELETE FROM PROJET where intituleProjet= ?";
 		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(request);
 		preparedstatement.setString(1, intituleProjet);
