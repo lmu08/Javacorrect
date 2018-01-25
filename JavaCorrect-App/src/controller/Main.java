@@ -9,6 +9,8 @@ public class Main
 extends Application {
 	
 	public static void main(final String[] args) {
+//		Thread receiveInputFile = new Thread(new ReceiveInputFileSocket(52112, "/home/flo"));
+//		receiveInputFile.start();
 //				final String projectId = UUID.randomUUID() + "";
 //				final LocalDate dateExpi = LocalDate.now();
 //				final String projectName = "my awesome project";

@@ -2,6 +2,7 @@ package controller;
 
 import java.io.File;
 import java.math.BigDecimal;
+import java.net.ConnectException;
 import java.net.URL;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,6 +13,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.UUID;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import db.Classroom;
@@ -47,6 +54,7 @@ public class MainViewController
 implements Initializable {
 	private static final String PROJECT_CREATION_ERROR = "Impossible de créer le projet";
 	private static final String SAVE_CSV_ERROR = "Impossible d'enregistrer le csv";
+	private static final String SEND_OUTPUTFILE_ERROR = "Impossible d'envoyer le fichier de sortie au serveur";
 	@FXML
 	private MenuItem logoutContextMenu;
 	@FXML
@@ -80,6 +88,8 @@ implements Initializable {
 	@FXML
 	private Button createProjectButton;
 	private String currentUser;
+	private String host;
+	private int port;
 	
 	@Override
 	public void initialize(final URL url, final ResourceBundle resourceBundle) {
@@ -106,6 +116,8 @@ implements Initializable {
 		projectNameField.textProperty().addListener(event -> updateCreateProjectButton());
 		deadlineDatePicker.setEditable(false);
 		deadlineDatePicker.setOnAction(event -> updateCreateProjectButton());
+		this.host = "localhost";
+		this.port = 52112;
 	}
 
 	public void initUser(final WindowManager windowManager, final String login) {
@@ -251,11 +263,14 @@ implements Initializable {
 			if (projectId.isPresent()) {
 				try {
 					//Parse the student list and send it to db
-					insertCSV(projectId.get());
-					final Alert alert = new Alert(AlertType.INFORMATION);
-					alert.setHeaderText("Création réussie");
-					alert.setContentText("Le projet a été créé avec succès");
-					alert.show();
+					if(sendOutputFileProjet(this.host, this.port, projectId.get())) {
+						insertCSV(projectId.get());
+						final Alert alert = new Alert(AlertType.INFORMATION);
+						alert.setHeaderText("Création réussie");
+						alert.setContentText("Le projet a été créé avec succès");
+						alert.show();
+					}
+					
 				} catch (final SQLException e) {
 					e.printStackTrace();
 					System.out.println(e.getSQLState());
@@ -267,6 +282,41 @@ implements Initializable {
 			System.out.println(e.getSQLState());
 			showWarning(PROJECT_CREATION_ERROR, "Une erreur serveur s'est produite lors de la création du projet.");
 		}
+	}
+
+	Thread.UncaughtExceptionHandler h = new Thread.UncaughtExceptionHandler() {
+	    public void uncaughtException(Thread th, Throwable ex) {
+	        System.out.println("Uncaught exception: " + ex);
+	    }
+	};
+	
+	private boolean sendOutputFileProjet(String serveur, int port ,String projName){
+		final String expectedOutputPath = (String) expectedOutputButton.getUserData();
+		File fichier = new File(expectedOutputPath);
+		if(!fichier.exists()) {
+			showWarning(PROJECT_CREATION_ERROR, "Le fichier passé en paramètre n'existe pas");
+		}
+		
+		ExecutorService pool = Executors.newFixedThreadPool(15);
+		Callable<Boolean> task= new SendOutputFileSocket(serveur, port, expectedOutputPath, projName);
+		Future<Boolean> future = pool.submit(task);
+		boolean bool = false;
+		try {
+			while(!future.isDone()) {
+			}
+			bool = future.get().booleanValue();
+			if(!bool) {
+				showWarning(SEND_OUTPUTFILE_ERROR, "erreur lors de la connexion au serveur ou de l'envoi");
+			}
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (ExecutionException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return bool;
+		
 	}
 
 	private Optional<String> insertProject()
@@ -306,12 +356,9 @@ implements Initializable {
 			}
 		}
 			for (final Student student : students) {
-				System.out.println(student.getClassroom().toString());
-				System.out.println(student.getClassroom().getClassroom());
 				ResultSet rspromo = MysqlRequest.getIdPromotionRequest(student.getClassroom().getYear(), student.getClassroom().getClassroom());
 				rspromo.next();
 				int idPromotion = rspromo.getInt("idPromotion");
-				System.out.println(idPromotion);
 				if (!MysqlRequest.getStudentByNum(student.getNumEtu()).isBeforeFirst()) {
 					
 					MysqlRequest.insertStudent(student.getNumEtu(), student.getPrenom(), student.getNom(), student.getEmail() ,idPromotion);
@@ -320,7 +367,7 @@ implements Initializable {
 			}
 		}
 
-	private void showWarning(final String title, final String message) {
+	void showWarning(final String title, final String message) {
 		final Alert alert = new Alert(AlertType.WARNING);
 		alert.setHeaderText(title);
 		alert.setContentText(message);
