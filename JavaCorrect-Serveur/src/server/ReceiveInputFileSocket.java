@@ -1,15 +1,15 @@
 package server;
 
-import java.io.BufferedOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+
+import tools.SocketTools;
 
 public class ReceiveInputFileSocket implements Runnable {
 
@@ -28,7 +28,6 @@ public class ReceiveInputFileSocket implements Runnable {
 
 	@Override
 	public void run() {
-		// TODO Auto-generated method stub
 		try {
 			this.socket = new ServerSocket(this.port);
 			while(true) {
@@ -38,14 +37,13 @@ public class ReceiveInputFileSocket implements Runnable {
 				receiveFile(c);
 			}
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+
 			e.printStackTrace();
 		}
 		finally {
 			try {
-				this.disconnect();
+				SocketTools.disconnect(this.c, this.socket);
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
@@ -54,10 +52,7 @@ public class ReceiveInputFileSocket implements Runnable {
 
 	private void receiveFile(Socket c) throws IOException {
 		FileOutputStream fos;
-		BufferedOutputStream bos;
-		// TODO Auto-generated method stub
 		InputStream is = c.getInputStream();
-		OutputStream os = c.getOutputStream();
 		DataInputStream dis = new DataInputStream(is);
 		DataOutputStream dos = new DataOutputStream(c.getOutputStream());
 
@@ -85,8 +80,6 @@ public class ReceiveInputFileSocket implements Runnable {
 		dos.writeInt(1);
 
 		fos = new FileOutputStream(outputFile);
-		bos = new BufferedOutputStream(fos);
-
 		byte[] buffer = new byte[sizeExcpected];
 
 		int filesize = sizeExcpected; // Send file size in separate msg
@@ -106,14 +99,5 @@ public class ReceiveInputFileSocket implements Runnable {
 		dos.writeInt(wellTransfered);
 
 	}
-	public void disconnect() throws IOException {
-		if(this.c.isClosed()) {
-			this.c.close();
-			System.out.println("Serveur : Closing client socket");
-		}
-		if(!this.socket.isClosed()) {
-			this.socket.close();
-			System.out.println("Serveur : Closing server socket");
-		}
-	}
+	
 }
