@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<project default="create_run_jar" name="JavaCorrect-App">
+    <property name="dir.buildfile" value="."/>
+    <property name="dir.jarfile" value="${dir.buildfile}"/>
+    <property name="lib" value="lib"/>
+    <target name="create_run_jar" depends="compile">
+        <jar destfile="${dir.jarfile}/app.jar" filesetmanifest="mergewithoutmain">
+            <manifest>
+                <attribute name="Main-Class" value="controller.Main"/>
+                <attribute name="Class-Path" value="."/>
+            </manifest>
+            <fileset dir="${dir.jarfile}/bin"/>
+            <zipfileset excludes="META-INF/*.SF" src="${lib}/mysql-connector-java-5.1.45-bin.jar"/>
+        </jar>
+    </target>
+    <target name="compile">  
+        <javac srcdir="." destdir="${dir.jarfile}/bin">  
+	    <classpath>  
+	        <fileset dir="${lib}">
+	    	<include name="**/*.jar" />
+	        </fileset>
+           </classpath>
+	</javac>
+    </target>  
+</project>

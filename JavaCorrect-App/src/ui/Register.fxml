@@ -9,20 +9,20 @@
    <center>
       <AnchorPane prefHeight="165.0" prefWidth="327.0" BorderPane.alignment="CENTER">
          <children>
-            <TextField fx:id="usernameTextField" layoutX="78.0" layoutY="6.0" prefHeight="25.0" prefWidth="190.0" promptText="Username" AnchorPane.leftAnchor="78.0" AnchorPane.rightAnchor="77.0" AnchorPane.topAnchor="6.0" />
-            <PasswordField fx:id="passwordField" layoutX="78.0" layoutY="47.0" prefHeight="25.0" prefWidth="190.0" promptText="Password" AnchorPane.leftAnchor="78.0" AnchorPane.rightAnchor="77.0" AnchorPane.topAnchor="47.0" />
-            <TextField fx:id="emailTextField" layoutX="78.0" layoutY="88.0" prefHeight="25.0" prefWidth="189.0" promptText="Email" AnchorPane.leftAnchor="78.0" AnchorPane.rightAnchor="78.0" AnchorPane.topAnchor="88.0" />
-            <Button fx:id="registerButton" layoutX="78.0" layoutY="127.0" mnemonicParsing="false" onAction="#handleRegisterAction" prefHeight="25.0" prefWidth="190.0" text="Register" />
+            <TextField fx:id="usernameTextField" layoutX="78.0" layoutY="6.0" prefHeight="25.0" prefWidth="190.0" promptText="login" AnchorPane.leftAnchor="78.0" AnchorPane.rightAnchor="77.0" AnchorPane.topAnchor="6.0" />
+            <PasswordField fx:id="passwordField" layoutX="78.0" layoutY="47.0" prefHeight="25.0" prefWidth="190.0" promptText="mot de passe" AnchorPane.leftAnchor="78.0" AnchorPane.rightAnchor="77.0" AnchorPane.topAnchor="47.0" />
+            <TextField fx:id="emailTextField" layoutX="78.0" layoutY="88.0" prefHeight="25.0" prefWidth="189.0" promptText="email" AnchorPane.leftAnchor="78.0" AnchorPane.rightAnchor="78.0" AnchorPane.topAnchor="88.0" />
+            <Button fx:id="registerButton" layoutX="78.0" layoutY="127.0" mnemonicParsing="false" onAction="#handleRegisterAction" prefHeight="25.0" prefWidth="190.0" text="S'inscrire" />
             <TextFlow layoutX="73.0" layoutY="168.0" prefHeight="25.0" prefWidth="200.0">
                <children>
-                  <Hyperlink onAction="#handleOpenSignInAction" text="You already have an account ?" />
+                  <Hyperlink onAction="#handleOpenSignInAction" text="Vous avez déjà un compte ?" />
                </children>
             </TextFlow>
          </children>
       </AnchorPane>
    </center>
    <top>
-      <Label prefHeight="75.0" prefWidth="130.0" text="Register" BorderPane.alignment="CENTER">
+      <Label prefHeight="75.0" prefWidth="171.0" text="Inscription" BorderPane.alignment="CENTER">
          <font>
             <Font size="31.0" />
          </font>

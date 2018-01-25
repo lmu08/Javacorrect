@@ -1,0 +1,28 @@
+A noter : La même version de java doit être utilisée pour compiler les fichiers java et générer les .jar
+
+
+### Création du fichier .jar pour le projet JavaCorrect-Serveur :
+
+Si le paquet "maven" n'est pas installé :
+sudo apt-get update
+sudo apt-get install -y maven
+
+Une fois que maven est installé :
+cd Javacorrect/JavaCorrect-Serveur/
+mvn assembly:assembly -DdescriptorId=jar-with-dependencies
+cd target/
+java -jar gestionMail-0.0.1-SNAPSHOT-jar-with-dependencies.jar
+
+
+
+### Création du fichier .jar pour le projet JavaCorrect-App :
+
+Si le paquet "ant" n'est pas installé :
+sudo apt-get update
+sudo apt-get install -y ant
+
+Une fois que ant est installé :
+cd Javacorrect/JavaCorrect-App/
+ant
+java -jar app.jar
+

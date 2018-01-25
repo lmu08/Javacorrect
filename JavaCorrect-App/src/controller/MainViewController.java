@@ -21,11 +21,11 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import db.Classroom;
 import db.MarkingDbManagementException;
 import db.MysqlRequest;
 import db.Student;
 import db.StudentCsvParser;
+import db.StudentGroup;
 import javafx.beans.property.SimpleDoubleProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -70,7 +70,7 @@ implements Initializable {
 	@FXML
 	private TableColumn<StudentProject, Double> markColumn;
 	@FXML
-	private TableColumn<StudentProject, String> classroomColumn;
+	private TableColumn<StudentProject, String> studentGroupColumn;
 	@FXML
 	private TableColumn<StudentProject, String> studentEmailColumn;
 	@FXML
@@ -110,12 +110,13 @@ implements Initializable {
 		studentIdColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, String>("studentId"));
 		studentEmailColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, String>("studentEmail"));
 		markColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, Double>("mark"));
-		classroomColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, String>("classroom"));
+		studentGroupColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, String>("studentGroup"));
 		sendDateColumn.setCellValueFactory(new PropertyValueFactory<StudentProject, Date>("sendDate"));
 		
 		projectNameField.textProperty().addListener(event -> updateCreateProjectButton());
 		deadlineDatePicker.setEditable(false);
 		deadlineDatePicker.setOnAction(event -> updateCreateProjectButton());
+		argumentsField.textProperty().addListener(event -> updateCreateProjectButton());
 		this.host = "localhost";
 		this.port = 52112;
 	}
@@ -154,15 +155,15 @@ implements Initializable {
 		private final SimpleStringProperty studentEmail;
 		private final SimpleDoubleProperty mark;
 		private final SimpleObjectProperty<Date> sendDate;
-		private final SimpleStringProperty classroom;
+		private final SimpleStringProperty studentGroup;
 
-		public StudentProject(final String studentName, final Integer studentId, final String studentEmail,final String classroom, final Double mark, final Date sendDate) {
+		public StudentProject(final String studentName, final Integer studentId, final String studentEmail, final String studentGroup, final Double mark, final Date sendDate) {
 			this.studentName = (studentName == null) ? new SimpleStringProperty() : new SimpleStringProperty(studentName);
 			this.studentId = (studentId == null) ? new SimpleIntegerProperty() : new SimpleIntegerProperty(studentId);
 			this.studentEmail = (studentEmail == null) ? new SimpleStringProperty() : new SimpleStringProperty(studentEmail);
 			this.mark = (mark == null) ? new SimpleDoubleProperty() : new SimpleDoubleProperty(mark);
 			this.sendDate = (sendDate == null) ? new SimpleObjectProperty<>() : new SimpleObjectProperty<>(sendDate);
-			this.classroom = (classroom == null) ? new SimpleStringProperty() : new SimpleStringProperty(classroom);
+			this.studentGroup = (studentGroup == null) ? new SimpleStringProperty() : new SimpleStringProperty(studentGroup);
 		}
 		
 		public String getStudentName() {
@@ -181,9 +182,10 @@ implements Initializable {
 			return sendDate.get();
 		}
 
-		public String getClassroom() {
-			return classroom.get();
+		public String getStudentGroup() {
+			return studentGroup.get();
 		}
+
 		public String getStudentEmail() {
 			return studentEmail.get();
 		}
@@ -209,9 +211,9 @@ implements Initializable {
 				final String nom = rs.getString("nomEtu") + " " + rs.getString("prenomEtu");
 				final String mail = rs.getString("emailEtu");
 				final int numEtu = rs.getInt("numEtu");
-				final BigDecimal note = Optional.ofNullable(rs.getBigDecimal("EVALUATION_note")).orElse(new BigDecimal(-1));
+				final BigDecimal note = rs.getBigDecimal("EVALUATION_note");
 				final String classe = rs.getString("intituleClasse");
-				projets.add(new StudentProject(nom, numEtu,mail , classe, note.doubleValue(), dateEnvoi));
+				projets.add(new StudentProject(nom, numEtu, mail, classe, (note != null ? note.doubleValue() : null), dateEnvoi));
 			}
 		} catch (final SQLException e) {
 			System.out.println(e.getSQLState());
@@ -235,6 +237,7 @@ implements Initializable {
 			expectedOutputButton.setUserData(path);
 			expectedOutputButton.setText(path);
 		});
+		updateCreateProjectButton();
 	}
 
 	@FXML
@@ -343,22 +346,23 @@ implements Initializable {
 		final StudentCsvParser sparser = new StudentCsvParser();
 		sparser.parse((String) studentListButton.getUserData());
 		final ArrayList<Student> students = sparser.getStudents();
-		final ArrayList<Classroom> classrooms = sparser.getClassrooms();
-		for(final Classroom classroom : classrooms) {
-			if(!MysqlRequest.getIdPromotionRequest(classroom.getYear(), classroom.getClassroom()).isBeforeFirst()) {
-				if(!MysqlRequest.getidClasseRequest(classroom.getClassroom()).isBeforeFirst())
-				{
-					MysqlRequest.insertClasse(classroom.getClassroom());
+		final ArrayList<StudentGroup> studentGroups = sparser.getStudentGroups();
+		for (final StudentGroup studentGroup : studentGroups) {
+			if (!MysqlRequest.getIdPromotionRequest(studentGroup.getYear(), studentGroup.getStudentGroup()).isBeforeFirst()) {
+				if (!MysqlRequest.getidClasseRequest(studentGroup.getStudentGroup()).isBeforeFirst()) {
+					MysqlRequest.insertClasse(studentGroup.getStudentGroup());
 				}
-				ResultSet rsClasse = MysqlRequest.getidClasseRequest(classroom.getClassroom());
+				final ResultSet rsClasse = MysqlRequest.getidClasseRequest(studentGroup.getStudentGroup());
 				rsClasse.next();
-				MysqlRequest.insertPromotion(classroom.getYear(), rsClasse.getInt("idClasse"));
+				MysqlRequest.insertPromotion(studentGroup.getYear(), rsClasse.getInt("idClasse"));
 			}
 		}
-			for (final Student student : students) {
-				ResultSet rspromo = MysqlRequest.getIdPromotionRequest(student.getClassroom().getYear(), student.getClassroom().getClassroom());
-				rspromo.next();
-				int idPromotion = rspromo.getInt("idPromotion");
+		for (final Student student : students) {
+			System.out.println(student.getStudentGroup().toString());
+			System.out.println(student.getStudentGroup().getStudentGroup());
+			final ResultSet rspromo = MysqlRequest.getIdPromotionRequest(student.getStudentGroup().getYear(), student.getStudentGroup().getStudentGroup());
+			rspromo.next();
+			final int idPromotion = rspromo.getInt("idPromotion");
 				if (!MysqlRequest.getStudentByNum(student.getNumEtu()).isBeforeFirst()) {
 					
 					MysqlRequest.insertStudent(student.getNumEtu(), student.getPrenom(), student.getNom(), student.getEmail() ,idPromotion);
@@ -375,6 +379,6 @@ implements Initializable {
 	}
 
 	private void updateCreateProjectButton() {
-		createProjectButton.setDisable(projectNameField.getText().isEmpty() || deadlineDatePicker.getValue() == null || (String) studentListButton.getUserData() == null);
+		createProjectButton.setDisable(projectNameField.getText().isEmpty() || deadlineDatePicker.getValue() == null || (String) studentListButton.getUserData() == null || (String) expectedOutputButton.getUserData() == null || argumentsField.getText().isEmpty());
 	}
 }

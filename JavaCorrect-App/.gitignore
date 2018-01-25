@@ -2,3 +2,4 @@
 /JavaCorrect-App/resources/db.properties
 .classpath
 /target/
+*.jar

@@ -47,30 +47,31 @@ implements Initializable {
 		final String email = emailTextField.getText();
 		final String password = passwordField.getText();
 		if (!Pattern.matches(MAIL_PATTERN, email)) {
-			showWarning("Mail invalide", "Veuillez vérifier votre adresse mail.");
+			showAlert(AlertType.WARNING, "Mail invalide", "Veuillez vérifier votre adresse mail.");
 		} else {
 			try {
 				final ResultSet rsMail = MysqlRequest.getProfesseurByMail(email.toLowerCase());
 				if (rsMail.isBeforeFirst()) {
-					showWarning("Mail invalide", "Cette adresse mail existe déjà.");
+					showAlert(AlertType.WARNING, "Mail invalide", "Cette adresse mail existe déjà.");
 				} else {
 					final ResultSet rsLogin = MysqlRequest.getProfesseurByLogin(username.toLowerCase());
 					if (rsLogin.isBeforeFirst()) {
-						showWarning("Login invalide", "Ce login existe déjà.");
+						showAlert(AlertType.WARNING, "Login invalide", "Ce login existe déjà.");
 					} else {
 						MysqlRequest.insertProfesseur(username, email, password);
+						showAlert(AlertType.INFORMATION, "Inscription réussie", "Le compte a été créé avec succès.");
 						windowManager.showLoginView();
 					}
 				}
 			} catch (final SQLException e) {
 				e.printStackTrace();
-				showWarning("Création impossible", "Une erreur serveur s'est produite lors de la création du compte.");
+				showAlert(AlertType.ERROR, "Echec de l'inscription", "Une erreur serveur s'est produite lors de la création du compte.");
 			}
 		}
 	}
 	
-	public void showWarning(final String title, final String message) {
-		final Alert alert = new Alert(AlertType.WARNING);
+	public void showAlert(final AlertType alertType, final String title, final String message) {
+		final Alert alert = new Alert(alertType);
 		alert.setHeaderText(title);
 		alert.setContentText(message);
 		alert.show();

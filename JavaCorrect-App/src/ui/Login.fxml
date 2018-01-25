@@ -12,7 +12,7 @@
             <TextField fx:id="usernameTextField" layoutX="78.0" layoutY="6.0" prefHeight="25.0" prefWidth="190.0" promptText="login" AnchorPane.leftAnchor="78.0" AnchorPane.rightAnchor="77.0" AnchorPane.topAnchor="6.0" />
             <PasswordField fx:id="passwordField" layoutX="78.0" layoutY="47.0" prefHeight="25.0" prefWidth="190.0" promptText="mot de passe" AnchorPane.leftAnchor="78.0" AnchorPane.rightAnchor="77.0" AnchorPane.topAnchor="47.0" />
             <Button layoutX="78.0" layoutY="88.0" mnemonicParsing="false" onAction="#handleLoginAction" prefHeight="25.0" prefWidth="189.0" text="Login" AnchorPane.leftAnchor="78.0" AnchorPane.rightAnchor="78.0" />
-            <TextFlow layoutX="73.0" layoutY="131.0" prefHeight="25.0" prefWidth="200.0">
+            <TextFlow layoutX="105.0" layoutY="122.0" prefHeight="25.0" prefWidth="130.0">
                <children>
                   <Hyperlink onAction="#handleOpenCreateAccountAction" text="Pas encore inscrit ?" />
                </children>
