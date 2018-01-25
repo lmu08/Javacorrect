@@ -11,16 +11,17 @@ import java.net.Socket;
 
 import tools.SocketTools;
 
-public class ReceiveInputFileSocket implements Runnable {
+public class ReceiveInputFileSocket
+implements Runnable {
 
-	private String outputfileBase;
-	final static String SEPARATOR = "/";
+	private final String outputfileBase;
+	private final static String SEPARATOR = "/";
 
-	private int port;
-	ServerSocket socket;
-	Socket c;
+	private final int port;
+	private ServerSocket socket;
+	private Socket c;
 
-	ReceiveInputFileSocket(int port, String filePath) {
+	ReceiveInputFileSocket(final int port, final String filePath) {
 		this.outputfileBase = filePath;
 		this.port = port;
 
@@ -37,52 +38,53 @@ public class ReceiveInputFileSocket implements Runnable {
 				receiveFile(c);
 
 			}
-		} catch (IOException e) {
+		} catch (final IOException e) {
 
 			e.printStackTrace();
 		} finally {
 			try {
 				SocketTools.disconnect(this.c, this.socket);
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				e.printStackTrace();
 			}
 		}
 
 	}
 
-	private void receiveFile(Socket c) throws IOException {
+	private void receiveFile(final Socket c)
+	throws IOException {
 		FileOutputStream fos;
-		InputStream is = c.getInputStream();
-		DataInputStream dis = new DataInputStream(is);
-		DataOutputStream dos = new DataOutputStream(c.getOutputStream());
+		final InputStream is = c.getInputStream();
+		final DataInputStream dis = new DataInputStream(is);
+		final DataOutputStream dos = new DataOutputStream(c.getOutputStream());
 
-		byte repClientByte[] = new byte[36];
+		final byte repClientByte[] = new byte[36];
 		try {
 			is.read(repClientByte, 0, 36);
-		} catch (IOException ioe) {
+		} catch (final IOException ioe) {
 
 			ioe.printStackTrace();
 		}
-		String repClient = new String(repClientByte).toString();
-		String outputFolder = this.outputfileBase + SEPARATOR + repClient;
-		File dir = new File(outputFolder);
+		final String repClient = new String(repClientByte).toString();
+		final String outputFolder = this.outputfileBase + SEPARATOR + repClient;
+		final File dir = new File(outputFolder);
 		if (!dir.exists()) {
 			dir.mkdirs();
 		}
-		String outputFile = outputFolder + SEPARATOR + "output.txt";
+		final String outputFile = outputFolder + SEPARATOR + "output.txt";
 
 		System.out.println(this.outputfileBase);
-		int matches = repClient.matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}") ? 1 : 0;
+		final int matches = repClient.matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}") ? 1 : 0;
 		dos.writeInt(matches);
-		int sizeExcpected = dis.readInt();
+		final int sizeExcpected = dis.readInt();
 		System.out.println(sizeExcpected);
 
 		dos.writeInt(1);
 
 		fos = new FileOutputStream(outputFile);
-		byte[] buffer = new byte[sizeExcpected];
+		final byte[] buffer = new byte[sizeExcpected];
 
-		int filesize = sizeExcpected; // Send file size in separate msg
+		final int filesize = sizeExcpected; // Send file size in separate msg
 		int read = 0;
 		int totalRead = 0;
 		int remaining = filesize;
@@ -94,13 +96,14 @@ public class ReceiveInputFileSocket implements Runnable {
 		}
 		fos.close();
 
-		File file = new File(outputFile);
-		int wellTransfered = (file.length() == sizeExcpected) ? 1 : 0;
+		final File file = new File(outputFile);
+		final int wellTransfered = (file.length() == sizeExcpected) ? 1 : 0;
 		dos.writeInt(wellTransfered);
 
 	}
 
-	public void disconnect() throws IOException {
+	public void disconnect()
+	throws IOException {
 		if (this.c.isClosed()) {
 			this.c.close();
 			System.out.println("Serveur : Closing client socket");

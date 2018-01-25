@@ -6,7 +6,7 @@ import java.sql.SQLException;
 
 public class MysqlConnexion {
 	private static Connection connect = null;
-
+	
 	public MysqlConnexion(final MysqlPropertiesParser properties) {
 		if (properties.getUrl() != null && properties.getUser() != null && properties.getPassword() != null) {
 			try {
@@ -23,7 +23,7 @@ public class MysqlConnexion {
 			}
 		}
 	}
-
+	
 	public static synchronized Connection getInstance(final MysqlPropertiesParser properties) {
 		if (connect == null) {
 			new MysqlConnexion(properties);

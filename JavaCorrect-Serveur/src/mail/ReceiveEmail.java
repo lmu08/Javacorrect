@@ -26,7 +26,8 @@ public class ReceiveEmail {
 
 	static String saveDirectory;
 
-	public static void receiveEmail(final String login, final String password) throws Exception {
+	public static void receiveEmail(final String login, final String password)
+	throws Exception {
 		String idProjet, idProjetEtu;
 
 		idProjet = "Projet1";
@@ -52,23 +53,24 @@ public class ReceiveEmail {
 			final Message[] messages = emailFolder.getMessages();
 			for (int i = 0; i < messages.length; i++) {
 
-				Message message = messages[i];
+				final Message message = messages[i];
 
 				System.out.println("message1 : " + message);
-				Thread e = waitForRed(emailFolder, login, password, message, idProjet, idProjetEtu);
+				final Thread e = waitForRed(emailFolder, login, password, message, idProjet, idProjetEtu);
 				// message.setFlag(Flags.Flag.DELETED, false);
-				listThread = new LinkedList<Thread>();
+				listThread = new LinkedList<>();
 				listThread.add(e);
 
 			}
 
 			// attente des threads
-			for (Thread thread : listThread) {
+			for (final Thread thread : listThread) {
 				thread.join();
 			}
 
-			if (emailFolder.isOpen())
+			if (emailFolder.isOpen()) {
 				emailFolder.close(false);
+			}
 			emailStore.close();
 
 		} catch (final MessagingException e) {
@@ -77,8 +79,7 @@ public class ReceiveEmail {
 
 	}
 
-	private static Thread waitForRed(Folder emailFolder, String login, String password, Message message,
-			String idProjet, String idProjetEtu) {
+	private static Thread waitForRed(final Folder emailFolder, final String login, final String password, final Message message, final String idProjet, final String idProjetEtu) {
 
 		final Thread thread = new Thread(new Runnable() {
 			@Override
@@ -87,63 +88,64 @@ public class ReceiveEmail {
 				if (true) {
 					try {
 
-						if (!emailFolder.isOpen())
+						if (!emailFolder.isOpen()) {
 							emailFolder.open(Folder.READ_WRITE);
+						}
 
 						System.out.println("message2 : " + message);
 
-						String subject = message.getSubject();
+						final String subject = message.getSubject();
 						System.out.println("sub : " + subject);
 
-						Pattern p = Pattern.compile("/");
+						final Pattern p = Pattern.compile("/");
 						// séparation du subject en sous-chaînes
-						String[] items = p.split(subject, 10);
+						final String[] items = p.split(subject, 10);
 
 						// compilation de la regex
-						Pattern patternProjet = Pattern.compile(idProjet + "/" + idProjetEtu);
+						final Pattern patternProjet = Pattern.compile(idProjet + "/" + idProjetEtu);
 						// création d'un moteur de recherche
-						Matcher matchSubject = patternProjet.matcher(items[0] + "/" + items[1]);
+						final Matcher matchSubject = patternProjet.matcher(items[0] + "/" + items[1]);
 
 						// f > chemin home (ex içi c'est /home/katy
-						FileSystemView fsv = FileSystemView.getFileSystemView();
-						File f = fsv.getDefaultDirectory();
+						final FileSystemView fsv = FileSystemView.getFileSystemView();
+						final File f = fsv.getDefaultDirectory();
 
 						saveDirectory = f.toString() + "/" + idProjet; // le répertoire du dossier du projet du prof
 
 						if (matchSubject.matches() /* && que le idProjet correspond à L'idEtu */) {
-							Multipart multipart = (Multipart) message.getContent();
+							final Multipart multipart = (Multipart) message.getContent();
 							System.out.println("nb de pièce joint : " + (multipart.getCount() - 1));
 
 							for (int j = 1; j < multipart.getCount(); j++) {
 
-								BodyPart bodyPart = multipart.getBodyPart(j);
+								final BodyPart bodyPart = multipart.getBodyPart(j);
 								// InputStream stream = bodyPart.getInputStream();
 								// BufferedReader br = new BufferedReader(new InputStreamReader(stream));
-								MimeBodyPart part = (MimeBodyPart) multipart.getBodyPart(j);
+								final MimeBodyPart part = (MimeBodyPart) multipart.getBodyPart(j);
 
-								String zipFile = Optional.ofNullable(bodyPart.getFileName()).orElse("");
+								final String zipFile = Optional.ofNullable(bodyPart.getFileName()).orElse("");
 
 								// compilation de la regex
-								Pattern patternFile = Pattern.compile("^[0-9]{7}+.zip$");
+								final Pattern patternFile = Pattern.compile("^[0-9]{7}+.zip$");
 								// création d'un moteur de recherche
-								Matcher matchNomFileZipe = patternFile.matcher(zipFile);
+								final Matcher matchNomFileZipe = patternFile.matcher(zipFile);
 
 								System.out.println("si c'est le bon .zip : " + matchNomFileZipe.matches());
 
 								if (matchNomFileZipe.matches() /* && le numEtu correspond à L'idEtu */) {
 
-									String numEtu = zipFile.substring(0, zipFile.indexOf("."));
+									final String numEtu = zipFile.substring(0, zipFile.indexOf("."));
 
 									// création du dossier de l'étudiant
 									new File(saveDirectory + "/" + numEtu).mkdir();
 
-									String messageContent = part.getContent().toString();
+									final String messageContent = part.getContent().toString();
 									System.out.println("Message : " + messageContent);
 
 									// move Files
 									if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
 										// this part is attachment
-										String fileName = part.getFileName();
+										final String fileName = part.getFileName();
 										part.saveFile(saveDirectory + File.separator + fileName);
 									} else {
 										// this part may be the message content
@@ -151,16 +153,16 @@ public class ReceiveEmail {
 									}
 
 									// Unzip
-									File zipFilePath = new File(saveDirectory + "/" + zipFile);
-									File destDir = new File(saveDirectory + "/" + numEtu);
+									final File zipFilePath = new File(saveDirectory + "/" + zipFile);
+									final File destDir = new File(saveDirectory + "/" + numEtu);
 
 									MyZip.decompress(zipFilePath, destDir, true);
-									String args = " ";
+									final String args = " ";
 									System.out.println(saveDirectory);
 
 									Notation.note(saveDirectory, numEtu, idProjet, args);
 									SendEmail.sendEmail(login, password, message.getFrom()[0].toString(), subject,
-											"votre devoir à bien été reçu");
+										"votre devoir à bien été reçu");
 								} else {
 									System.out.println("c'est pas le bon format du zip");
 								}
@@ -168,9 +170,10 @@ public class ReceiveEmail {
 						} else {
 							System.out.println("c'est pas le bon objet");
 						}
-						if (emailFolder.isOpen())
+						if (emailFolder.isOpen()) {
 							emailFolder.close(false);
-					} catch (Exception e) {
+						}
+					} catch (final Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}

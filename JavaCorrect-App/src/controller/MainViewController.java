@@ -48,12 +48,13 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 
-public class MainViewController implements Initializable {
+public class MainViewController
+implements Initializable {
 	private static final String PROJECT_CREATION_ERROR = "Impossible de créer le projet";
 	private static final String SAVE_CSV_ERROR = "Impossible d'enregistrer le csv";
 	private static final String SEND_OUTPUTFILE_ERROR = "Impossible d'envoyer le fichier de sortie au serveur";
-	private static final String host = "localhost";
-	private final int port = 52112;
+	private static final String HOST = "localhost";
+	private static final int PORT = 52112;
 	@FXML
 	private MenuItem logoutContextMenu;
 	@FXML
@@ -96,8 +97,7 @@ public class MainViewController implements Initializable {
 		});
 		projectNameButton.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<String>() {
 			@Override
-			public void changed(final ObservableValue<? extends String> observable, final String oldValue,
-					final String newValue) {
+			public void changed(final ObservableValue<? extends String> observable, final String oldValue, final String newValue) {
 				if (newValue != null) {
 					updateTable();
 				}
@@ -153,17 +153,13 @@ public class MainViewController implements Initializable {
 		private final SimpleObjectProperty<Date> sendDate;
 		private final SimpleStringProperty studentGroup;
 
-		public StudentProject(final String studentName, final Integer studentId, final String studentEmail,
-				final String studentGroup, final Double mark, final Date sendDate) {
-			this.studentName = (studentName == null) ? new SimpleStringProperty()
-					: new SimpleStringProperty(studentName);
+		public StudentProject(final String studentName, final Integer studentId, final String studentEmail, final String studentGroup, final Double mark, final Date sendDate) {
+			this.studentName = (studentName == null) ? new SimpleStringProperty() : new SimpleStringProperty(studentName);
 			this.studentId = (studentId == null) ? new SimpleIntegerProperty() : new SimpleIntegerProperty(studentId);
-			this.studentEmail = (studentEmail == null) ? new SimpleStringProperty()
-					: new SimpleStringProperty(studentEmail);
+			this.studentEmail = (studentEmail == null) ? new SimpleStringProperty() : new SimpleStringProperty(studentEmail);
 			this.mark = (mark == null) ? new SimpleDoubleProperty() : new SimpleDoubleProperty(mark);
 			this.sendDate = (sendDate == null) ? new SimpleObjectProperty<>() : new SimpleObjectProperty<>(sendDate);
-			this.studentGroup = (studentGroup == null) ? new SimpleStringProperty()
-					: new SimpleStringProperty(studentGroup);
+			this.studentGroup = (studentGroup == null) ? new SimpleStringProperty() : new SimpleStringProperty(studentGroup);
 		}
 
 		public String getStudentName() {
@@ -200,7 +196,8 @@ public class MainViewController implements Initializable {
 		}
 	}
 
-	private ObservableList<StudentProject> parseStudentProjectList() throws MarkingDbManagementException {
+	private ObservableList<StudentProject> parseStudentProjectList()
+	throws MarkingDbManagementException {
 		final String intituleProjet = projectNameButton.getValue();
 		final ArrayList<StudentProject> projets = new ArrayList<>();
 		try {
@@ -213,7 +210,7 @@ public class MainViewController implements Initializable {
 				final BigDecimal note = rs.getBigDecimal("EVALUATION_note");
 				final String classe = rs.getString("intituleClasse");
 				projets.add(new StudentProject(nom, numEtu, mail, classe, (note != null ? note.doubleValue() : null),
-						dateEnvoi));
+					dateEnvoi));
 			}
 		} catch (final SQLException e) {
 			System.out.println(e.getSQLState());
@@ -299,14 +296,13 @@ public class MainViewController implements Initializable {
 			if (projectId.isPresent()) {
 				try {
 					// Parse the student list and send it to db
-					if (sendOutputFileProjet(this.host, this.port, projectId.get())) {
+					if (sendOutputFileProjet(HOST, PORT, projectId.get())) {
 						insertCSV(projectId.get());
 						final Alert alert = new Alert(AlertType.INFORMATION);
 						alert.setHeaderText("Création réussie");
 						alert.setContentText("Le projet a été créé avec succès");
 						alert.show();
 					}
-
 				} catch (final SQLException e) {
 					e.printStackTrace();
 					System.out.println(e.getSQLState());
@@ -326,30 +322,25 @@ public class MainViewController implements Initializable {
 		if (!fichier.exists()) {
 			showWarning(PROJECT_CREATION_ERROR, "Le fichier passé en paramètre n'existe pas");
 		}
-
+		
 		final ExecutorService pool = Executors.newFixedThreadPool(15);
 		final Callable<Boolean> task = new SendOutputFileSocket(serveur, port, expectedOutputPath, projName);
 		final Future<Boolean> future = pool.submit(task);
 		boolean bool = false;
 		try {
-			while (!future.isDone()) {
-			}
 			bool = future.get().booleanValue();
 			if (!bool) {
 				showWarning(SEND_OUTPUTFILE_ERROR, "erreur lors de la connexion au serveur ou de l'envoi");
 			}
-		} catch (final InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (final ExecutionException e) {
-			// TODO Auto-generated catch block
+		} catch (final InterruptedException | ExecutionException e) {
 			e.printStackTrace();
 		}
 		return bool;
-
+		
 	}
 
-	private Optional<String> insertProject() throws SQLException {
+	private Optional<String> insertProject()
+	throws SQLException {
 		final String projectId = UUID.randomUUID().toString();
 		final LocalDate deadline = deadlineDatePicker.getValue();
 		if (deadline.compareTo(LocalDate.now().plusDays(3)) < 0) {
@@ -367,14 +358,15 @@ public class MainViewController implements Initializable {
 		return Optional.empty();
 	}
 
-	private void insertCSV(final String projectId) throws SQLException {
+	private void insertCSV(final String projectId)
+	throws SQLException {
 		final StudentCsvParser sparser = new StudentCsvParser();
 		sparser.parse((String) studentListButton.getUserData());
 		final ArrayList<Student> students = sparser.getStudents();
 		final ArrayList<StudentGroup> studentGroups = sparser.getStudentGroups();
 		for (final StudentGroup studentGroup : studentGroups) {
 			if (!MysqlRequest.getIdPromotionRequest(studentGroup.getYear(), studentGroup.getStudentGroup())
-					.isBeforeFirst()) {
+				.isBeforeFirst()) {
 				if (!MysqlRequest.getidClasseRequest(studentGroup.getStudentGroup()).isBeforeFirst()) {
 					MysqlRequest.insertClasse(studentGroup.getStudentGroup());
 				}
@@ -387,14 +379,14 @@ public class MainViewController implements Initializable {
 			System.out.println(student.getStudentGroup().toString());
 			System.out.println(student.getStudentGroup().getStudentGroup());
 			final ResultSet rspromo = MysqlRequest.getIdPromotionRequest(student.getStudentGroup().getYear(),
-					student.getStudentGroup().getStudentGroup());
+				student.getStudentGroup().getStudentGroup());
 			rspromo.next();
 			final int idPromotion = rspromo.getInt("idPromotion");
 			final String idEtu = rspromo.getString("idEtu");
 			if (!MysqlRequest.getStudentByNum(student.getNumEtu()).isBeforeFirst()) {
 
 				MysqlRequest.insertStudent(student.getNumEtu(), student.getPrenom(), student.getNom(),
-						student.getEmail(), idPromotion, idEtu);
+					student.getEmail(), idPromotion, idEtu);
 			}
 			MysqlRequest.insertEvaluation(projectId, currentUser, student.getNumEtu(), idPromotion);
 		}
@@ -408,8 +400,6 @@ public class MainViewController implements Initializable {
 	}
 
 	private void updateCreateProjectButton() {
-		createProjectButton.setDisable(projectNameField.getText().isEmpty() || deadlineDatePicker.getValue() == null
-				|| (String) studentListButton.getUserData() == null
-				|| (String) expectedOutputButton.getUserData() == null || argumentsField.getText().isEmpty());
+		createProjectButton.setDisable(projectNameField.getText().isEmpty() || deadlineDatePicker.getValue() == null || (String) studentListButton.getUserData() == null || (String) expectedOutputButton.getUserData() == null || argumentsField.getText().isEmpty());
 	}
 }

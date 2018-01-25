@@ -27,7 +27,6 @@ public class MysqlRequest {
 			PreparedStatement preparedstatement = myqlco.prepareStatement(getMailByidProjet);
 			preparedstatement.setString(1, idProjet);
 			return preparedstatement.executeQuery();
-		}
 	}
 
 	public static ResultSet getDateExpiByidProjet(String idProjet) throws SQLException {

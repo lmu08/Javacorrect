@@ -19,11 +19,8 @@ public class MysqlPropertiesParser {
 
 	private MysqlPropertiesParser() {
 		final Properties prop = new Properties();
-		InputStream input;
-		try {
-			final File file = new File("resources/db.properties");
-
-			input = new FileInputStream(file);
+		final File file = new File("resources/db.properties");
+		try (InputStream input = new FileInputStream(file);) {
 			prop.load(input);
 			this.user = prop.getProperty("USER");
 			this.password = prop.getProperty("PASSWORD");

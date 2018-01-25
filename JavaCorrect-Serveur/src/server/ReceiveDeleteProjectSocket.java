@@ -9,19 +9,19 @@ import java.net.Socket;
 
 import tools.SocketTools;
 
-public class ReceiveDeleteProjectSocket implements Runnable {
+public class ReceiveDeleteProjectSocket
+implements Runnable {
 
-	private String outputfileBase;
+	private final String outputfileBase;
 	final static String SEPARATOR = "/";
 
-	private int port;
-	ServerSocket socket;
-	Socket c;
+	private final int port;
+	private ServerSocket socket;
+	private Socket c;
 
-	ReceiveDeleteProjectSocket(int port, String filePath) {
+	ReceiveDeleteProjectSocket(final int port, final String filePath) {
 		this.outputfileBase = filePath;
 		this.port = port;
-		
 	}
 
 	@Override
@@ -29,20 +29,19 @@ public class ReceiveDeleteProjectSocket implements Runnable {
 		// TODO Auto-generated method stub
 		try {
 			this.socket = new ServerSocket(this.port);
-			while(true) {
+			while (true) {
 				System.out.println("Serveur: en attente");
 				this.c = this.socket.accept();
 				System.out.println("Serveur: Connexion établie");
 				receiveFile(c);
 			}
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
-		finally {
+		} finally {
 			try {
 				SocketTools.disconnect(this.c, this.socket);
-			} catch (IOException e) {
+			} catch (final IOException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
@@ -50,24 +49,25 @@ public class ReceiveDeleteProjectSocket implements Runnable {
 
 	}
 
-	private void receiveFile(Socket c) throws IOException {
+	private void receiveFile(final Socket c)
+	throws IOException {
 		
 		boolean deleted = false;
-		InputStream is = c.getInputStream();
-		DataOutputStream dos = new DataOutputStream(c.getOutputStream());
+		final InputStream is = c.getInputStream();
+		final DataOutputStream dos = new DataOutputStream(c.getOutputStream());
 
-		byte repClientByte[] = new byte[36];
+		final byte repClientByte[] = new byte[36];
 		try {
 			is.read(repClientByte, 0, 36);
-		} catch (IOException ioe) {
+		} catch (final IOException ioe) {
 
 			ioe.printStackTrace();
 		}
-		String projName = new String(repClientByte).toString();
-		if(projName.matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")) {
-			String outputFolder = this.outputfileBase + SEPARATOR + projName;
+		final String projName = new String(repClientByte).toString();
+		if (projName.matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")) {
+			final String outputFolder = this.outputfileBase + SEPARATOR + projName;
 			System.out.println(outputFolder);
-			File dir = new File(outputFolder);
+			final File dir = new File(outputFolder);
 			if (dir.exists()) {
 				SocketTools.delete(dir);
 				if (!dir.exists()) {
@@ -77,7 +77,6 @@ public class ReceiveDeleteProjectSocket implements Runnable {
 			}
 		}
 		dos.writeInt((deleted) ? 1 : 0);
-		
 
 	}
 }
