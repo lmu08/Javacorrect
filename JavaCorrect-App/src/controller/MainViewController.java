@@ -225,8 +225,8 @@ implements Initializable {
 	@FXML
 	private void handleDeleteProjectAction() {
 		final String intituleProjet = projectNameButton.getValue();
-		MysqlRequest.get
-		System.out.println(intituleProjet);
+//		MysqlRequest.get
+//		System.out.println(intituleProjet);
 //		final String expectedOutputPath = (String) expectedOutputButton.getUserData();
 //		File fichier = new File(expectedOutputPath);
 //		if(!fichier.exists()) {
