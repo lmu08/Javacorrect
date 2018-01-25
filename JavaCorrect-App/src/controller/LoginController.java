@@ -20,11 +20,11 @@ public class LoginController {
 	@FXML
 	private Hyperlink createAccountLink;
 	private WindowManager windowManager;
-
+	
 	public void initManager(final WindowManager windowManager) {
 		this.windowManager = windowManager;
 	}
-	
+
 	@FXML
 	public void handleLoginAction() {
 		try {
@@ -55,10 +55,10 @@ public class LoginController {
 			System.out.println(e.getSQLState());
 		}
 	}
-
+	
 	@FXML
 	private void handleOpenCreateAccountAction() {
 		windowManager.showRegisterView();
 	}
-	
+
 }

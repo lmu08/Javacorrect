@@ -4,7 +4,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
 public class EncryptingTools {
-	
+
 	public static String clearTextToEncrypted(final String clearText, final String algorithm) {
 		final StringBuffer result = new StringBuffer();
 		MessageDigest md;
@@ -18,7 +18,7 @@ public class EncryptingTools {
 		} catch (final NoSuchAlgorithmException e) {
 			e.printStackTrace();
 		}
-		
+
 		return result.toString();
 	}
 }

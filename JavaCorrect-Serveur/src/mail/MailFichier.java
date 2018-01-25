@@ -1,9 +1,9 @@
 package mail;
 
 public class MailFichier {
-	
+
 	public static void main(final String[] args) {
-		
+
 		// while (true) {
 		try {
 			ReceiveEmail.receiveEmail("java.correct@gmail.com", "789@Upmc");
@@ -12,10 +12,10 @@ public class MailFichier {
 			e.printStackTrace();
 		}
 		// }
-		
+
 		// SendEmail.sendEmail("java.correct@gmail.com", "789@Upmc",
 		// "amichi.katia@gmail.com", "titre", "message test");
-		
+
 	}
-	
+
 }
