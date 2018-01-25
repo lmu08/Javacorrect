@@ -1,6 +1,5 @@
 package controller;
 
-import java.io.BufferedInputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -12,8 +11,7 @@ import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.concurrent.Callable;
 
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
+import tools.SocketTools;
 
 public class SendOutputFileSocket implements Callable<Boolean> {
 
@@ -21,7 +19,6 @@ public class SendOutputFileSocket implements Callable<Boolean> {
 	private String projName;
 	private int port;
 	private String host;
-	private final static int TRUE = 1;
 	private final static int FALSE = 1;
 	Socket c;
 	boolean isConnected;
@@ -43,7 +40,7 @@ public class SendOutputFileSocket implements Callable<Boolean> {
 		try {
 			c.connect(server, this.port);
 			res = sendFile(c);
-			this.disconnect();
+			SocketTools.disconnect(this.c);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 //			this.disconnect();
@@ -62,7 +59,7 @@ public class SendOutputFileSocket implements Callable<Boolean> {
 
 		os.write(this.projName.getBytes("UTF8"));
 
-		if (!getBoolean(FALSE)) {
+		if (!SocketTools.getBoolean(FALSE)) {
 //			closeStream(os, is);
 			return false;
 		}
@@ -74,7 +71,6 @@ public class SendOutputFileSocket implements Callable<Boolean> {
 		dis.readInt();
 
 		FileInputStream fis = new FileInputStream(file);
-		BufferedInputStream bis = new BufferedInputStream(fis);
 		while (fis.read(byteArray) > 0) {
 			dos.write(byteArray);
 		}
@@ -94,27 +90,13 @@ public class SendOutputFileSocket implements Callable<Boolean> {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		if (!getBoolean(dis.readInt())) {
+		if (!SocketTools.getBoolean(dis.readInt())) {
 			res = false;
 		}
 
 
 		return res;
 
-	}
-
-	public static boolean getBoolean(int binaryInt) {
-		if (binaryInt == TRUE) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
-	public void disconnect() throws IOException {
-		if (c.isConnected()) {
-			c.close();
-		}
 	}
 
 }

@@ -271,7 +271,14 @@ public class MysqlRequest {
 		return preparedstatement.executeQuery();
 	}
 
-	public static int deleteProjet(String intituleProjet) throws SQLException {
+	public static int deleteProjet(String idProjet) throws SQLException {
+		String request = "DELETE FROM PROJET where idProjet= ?";
+		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(request);
+		preparedstatement.setString(1, idProjet);
+		return preparedstatement.executeUpdate();
+	}
+
+	public static int getProjetByIntitule(String intituleProjet) throws SQLException {
 		String request = "DELETE FROM PROJET where intituleProjet= ?";
 		java.sql.PreparedStatement preparedstatement = myqlco.prepareStatement(request);
 		preparedstatement.setString(1, intituleProjet);

@@ -33,5 +33,4 @@ public class MysqlRequest {
 		preparedstatement.setString(1, email);
 		return preparedstatement.executeQuery();
 	}
-
 }

@@ -224,6 +224,40 @@ public class MainViewController implements Initializable {
 
 	@FXML
 	private void handleDeleteProjectAction() {
+
+		final String intituleProjet = projectNameButton.getValue();
+		// MysqlRequest.get
+		// System.out.println(intituleProjet);
+		// final String expectedOutputPath = (String)
+		// expectedOutputButton.getUserData();
+		// File fichier = new File(expectedOutputPath);
+		// if(!fichier.exists()) {
+		// showWarning(PROJECT_CREATION_ERROR, "Le fichier passé en paramètre n'existe
+		// pas");
+		// }
+		//
+		// ExecutorService pool = Executors.newFixedThreadPool(15);
+		// Callable<Boolean> task= new SendOutputFileSocket(serveur, port,
+		// expectedOutputPath, projName);
+		// Future<Boolean> future = pool.submit(task);
+		// boolean bool = false;
+		// try {
+		// while(!future.isDone()) {
+		// }
+		// bool = future.get().booleanValue();
+		// if(!bool) {
+		// showWarning(SEND_OUTPUTFILE_ERROR, "erreur lors de la connexion au serveur ou
+		// de l'envoi");
+		// }
+		// } catch (InterruptedException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// } catch (ExecutionException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
+		// return bool;
+
 		// TODO Send delete request to DB + display response
 	}
 
@@ -255,7 +289,6 @@ public class MainViewController implements Initializable {
 
 	@FXML
 	private void handleCreateProjectAction() {
-		// TODO send to the server using a socket (scp temporarily)
 		@SuppressWarnings("unused")
 		final String expectedOutputPath = (String) expectedOutputButton.getUserData();
 
