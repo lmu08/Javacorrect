@@ -1,0 +1,6 @@
+JDBC_DRIVER = com.mysql.jdbc.Driver
+DBNAME = <bd>
+HOST = localhost
+PORT = 3306
+USER = <identifiant>
+PASSWORD = <password>

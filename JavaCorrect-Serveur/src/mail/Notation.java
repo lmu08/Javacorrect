@@ -1,7 +1,6 @@
 package mail;
 
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -35,10 +34,10 @@ public class Notation {
 		
 		if (diffFichier(cmd)) {
 			System.out.println("0");
-			ecrir_ligne_fichier(compilDirectory, numEtu, 0, "test");
+			ecrireLigneFichier(compilDirectory, numEtu, 0, "test");
 		} else {
 			System.out.println("20");
-			ecrir_ligne_fichier(compilDirectory, numEtu, 20, "/listeEtu.csv");
+			ecrireLigneFichier(compilDirectory, numEtu, 20, "/listeEtu.csv");
 		}
 	}
 	
@@ -51,8 +50,8 @@ public class Notation {
 		return br.ready();
 	}
 	
-	public static void ecrir_ligne_fichier(final String directory, final String numEtu, final int note, final String listeEtu)
-	throws FileNotFoundException, IOException {
+	public static void ecrireLigneFichier(final String directory, final String numEtu, final int note, final String listeEtu)
+	throws IOException {
 		final String directory2 = directory + listeEtu;
 		final String l = null;
 		String ligne = null;
@@ -66,7 +65,7 @@ public class Notation {
 		String newLigne = "";
 		while ((ligne = br.readLine()) != null) {
 			compt++;
-			if (ligne.endsWith("3603567")) {
+			if (ligne.endsWith(numEtu)) {
 				System.out.println("ligne : " + ligne);
 				newLigne = ligne + "," + note;
 				System.out.println("newLigne : " + newLigne);
