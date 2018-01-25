@@ -22,6 +22,8 @@ import com.sun.mail.imap.IMAPStore;
 
 public class ReceiveEmail {
 
+	private String currentUser;
+
 	static String saveDirectory;
 
 	public static void receiveEmail(final String login, final String password) throws Exception {
@@ -108,7 +110,19 @@ public class ReceiveEmail {
 
 						saveDirectory = f.toString() + "/" + idProjet; // le répertoire du dossier du projet du prof
 
-						if (matchSubject.matches()) {
+						// vérification du idProjet
+
+						// if (MysqlRequest.getEvaluationByLoginProjName(currentUser,
+						// items[0]).isBeforeFirst()) {
+						// showWarning(PROJECT_CREATION_ERROR, "Vous avez déjà créé un projet du même
+						// nom.");
+						// } else {
+						// final String arguments = argumentsField.getText();
+						// MysqlRequest.insertProject(projectId, deadline, projectName, arguments);
+						// return Optional.of(projectId);
+						// }
+
+						if (matchSubject.matches() /* && que le idProjet correspond à L'idEtu */) {
 							Multipart multipart = (Multipart) message.getContent();
 							System.out.println("nb de pièce joint : " + (multipart.getCount() - 1));
 
@@ -128,7 +142,7 @@ public class ReceiveEmail {
 
 								System.out.println("si c'est le bon .zip : " + matchNomFileZipe.matches());
 
-								if (matchNomFileZipe.matches()) {
+								if (matchNomFileZipe.matches() /* && le numEtu correspond à L'idEtu */) {
 
 									String numEtu = zipFile.substring(0, zipFile.indexOf("."));
 

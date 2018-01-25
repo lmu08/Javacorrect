@@ -15,10 +15,10 @@ public class Notation {
 	// static String saveDirectory = "/home/katy/projet/";
 
 	/**
-	 * noter les devoir des étudiants
+	 * noter les devoirs des étudiants
 	 * 
 	 * @param compilDirectory
-	 *            répertoire où le résulat de la compilation sera mit
+	 *            répertoire où le résulat de la compilation est mit
 	 * @param numEtu
 	 *            numéro de l'étudiant a noté
 	 * @throws IOException
@@ -38,7 +38,7 @@ public class Notation {
 			ecrir_ligne_fichier(compilDirectory, numEtu, 0, "test");
 		} else {
 			System.out.println("20");
-			ecrir_ligne_fichier(compilDirectory, numEtu, 20, "/listeEtu.csv");
+			ecrir_ligne_fichier(compilDirectory, numEtu, 20, "listeEtu.csv");
 		}
 
 	}
