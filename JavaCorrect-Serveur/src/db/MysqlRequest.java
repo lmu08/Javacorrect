@@ -47,8 +47,7 @@ public class MysqlRequest {
 	
 	public static int updateNote(double note, String projectId, int numEtu)
 	throws SQLException {
-		String addNoteToEval = "UPDATE EVALUATION " + "SET EVALUATION_note= ?" + "WHERE PROJET_idProjet= ? and"
-				+ " ETUDIANT_numEtu = ?;";
+		String addNoteToEval = "UPDATE EVALUATION " + "SET EVALUATION_note= ?" + "WHERE PROJET_idProjet= ? and" + " ETUDIANT_numEtu = ?;";
 		PreparedStatement preparedstatement = myqlco.prepareStatement(addNoteToEval);
 		preparedstatement.setBigDecimal(1, BigDecimal.valueOf(note));
 		preparedstatement.setString(2, projectId);
@@ -61,6 +60,13 @@ public class MysqlRequest {
 		PreparedStatement preparedstatement = myqlco.prepareStatement(getProjectRs);
 		preparedstatement.setString(1, idProjet);
 		return preparedstatement.executeQuery();
+	}
+	
+	public static ResultSet getArguments(String idProject) throws SQLException {
+		String request = "select arguments from PROJET where idProjet=?";
+		PreparedStatement preparedStatement = myqlco.prepareStatement(request);
+		preparedStatement.setString(1, idProject);
+		return preparedStatement.executeQuery();
 	}
 
 }

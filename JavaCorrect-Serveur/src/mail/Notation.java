@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.concurrent.TimeUnit;
 
 import db.MysqlRequest;
 
@@ -31,8 +32,9 @@ public class Notation {
 		RUNTIME.exec("./javacShell " + etuDirectory + " " + args);
 		final String output = Files.list(Paths.get(compilDirectory)).map(Path::getFileName).map(Path::toString).filter(path -> path.endsWith(".txt")).findAny().orElse("");
 		System.out.println("Comparaison avec le fichier du prof : " + output);
-		final String cmd = "diff -q " + compilDirectory + "/" + output + " " + etuDirectory + "/testEtu";
+		final String cmd = "diff -qEbB " + compilDirectory + "/" + output + " " + etuDirectory + "/testEtu";
 		System.out.println(cmd);
+		TimeUnit.SECONDS.sleep(5);
 		if (diffFichier(cmd)) {
 			System.out.println("0");
 			MysqlRequest.updateNote(0.0, idProjet, Integer.valueOf(numEtu));
@@ -45,18 +47,12 @@ public class Notation {
 	// br2 reçois true si les fichier sont déffirents / false dans le cas contraire
 	public static boolean diffFichier(final String cmd)
 	throws Exception {
-		
 		final ProcessBuilder pb = new ProcessBuilder(cmd.split(" "));
 		pb.redirectErrorStream(true);
 		final Process proc = pb.start();
 		final BufferedReader br = new BufferedReader(new InputStreamReader(proc.getInputStream()));
 		final String line = br.readLine();
 		System.out.println("line : " + line);
-		if (line == null) {
-			return false;
-		} else {
-			return true;
-		}
-		
+		return line != null;
 	}
 }
