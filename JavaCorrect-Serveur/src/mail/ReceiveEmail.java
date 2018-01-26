@@ -29,16 +29,11 @@ public class ReceiveEmail {
 
 	public static void receiveEmail(final String login, final String password) throws Exception {
 
-		final Properties properties = new Properties();
-		properties.put("mail.imap.host", "imap.gmail.com");
-		properties.put("mail.imap.port", "993");
-		properties.put("mail.imap.auth", "true");
-		properties.put("mail.imap.ssl.enable", "true");
-
+		final Properties imapProps = MailPropertiesParser.getInstance().getImapProperties();
 		List<Thread> listThread = null;
 
 		try {
-			final IMAPStore emailStore = (IMAPStore) Session.getInstance(properties).getStore("imap");
+			final IMAPStore emailStore = (IMAPStore) Session.getInstance(imapProps).getStore("imap");
 			emailStore.connect(login, password);
 
 			// create the folder object and open it

@@ -24,5 +24,4 @@ public class Main extends Application {
 		final WindowManager windowManager = new WindowManager(primaryStage);
 		windowManager.showLoginView();
 	}
-
 }

@@ -50,6 +50,15 @@ implements Runnable {
 
 	private void receiveFile(final Socket c)
 	throws IOException {
+		/**
+		 * Permet de recevoir un fichier envoyé depuis l'application des professeurs
+		 * Le fichier reçu correspond au fichier de sortie attendu et sera stocké sur le serveur
+		 * avec le chemin suivant /BASE_PATH/Idprojet/output.txt
+		 * À la fin, une réponse est envoyé au serveur 0(échec), 1(succès)
+		 * indiquant si la réception du fichier est correcte et que celui-ci
+		 * a la taille correcte
+		 * @param socket du client
+		 */
 		
 		boolean deleted = false;
 		final InputStream is = c.getInputStream();

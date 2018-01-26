@@ -14,17 +14,15 @@ import javax.mail.internet.MimeMessage;
 public class SendEmail {
 	
 	public static void sendEmail(final String login, final String password, final String toEmail, final String subject, final String body) {
-		final Properties props = new Properties();
-		props.put("mail.smtp.host", "smtp.gmail.com");
-		props.put("mail.smtp.port", "587");
-		props.put("mail.smtp.auth", "true");
-		props.put("mail.smtp.starttls.enable", "true");
-		final MimeMessage msg = new MimeMessage(Session.getInstance(props));
+		
+		final Properties smtpProps = MailPropertiesParser.getInstance().getSmtpProperties();
+		final MimeMessage msg = new MimeMessage(Session.getInstance(smtpProps));
 		
 		try {
-			msg.addHeader("Content-type", "text/HTML; charset=UTF-8");
-			msg.addHeader("format", "flowed");
-			msg.addHeader("Content-Transfer-Encoding", "8bit");
+			final Properties headerProps = MailPropertiesParser.getInstance().getHeaderProperties();
+			msg.addHeader("Content-type", headerProps.getProperty("Content-type"));
+			msg.addHeader("format", headerProps.getProperty("format"));
+			msg.addHeader("Content-Transfer-Encoding",  headerProps.getProperty("Content-Transfer-Encoding"));
 			
 			final InternetAddress[] dest = InternetAddress.parse(toEmail, false);
 			msg.setFrom(new InternetAddress("no_reply@test.com", "no_reply"));
@@ -37,7 +35,7 @@ public class SendEmail {
 			System.out.println("Message is ready");
 			Transport.send(msg, login, password);
 			
-			System.out.println("EMail Sent Successfully!!");
+			System.out.println("Email Sent Successfully!!");
 		} catch (final MessagingException | UnsupportedEncodingException e) {
 			e.printStackTrace();
 		}
