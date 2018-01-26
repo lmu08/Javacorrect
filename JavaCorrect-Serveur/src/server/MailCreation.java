@@ -10,7 +10,6 @@ import mail.SendEmail;
 
 public class MailCreation {
 	
-	@SuppressWarnings("resource")
 	public static void mailCreation(final String idProjet)
 	throws SQLException {
 		try {

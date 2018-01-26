@@ -19,7 +19,7 @@ public class MysqlPropertiesParser {
 	
 	private MysqlPropertiesParser() {
 		/**
-		 * Parse db.properties file and make keys available with getters
+		 * Parses db.properties file and make keys available with getters
 		 * To instantiate this classes, please use singleton pattern(getInstance() method).
 		 */
 		final Properties prop = new Properties();

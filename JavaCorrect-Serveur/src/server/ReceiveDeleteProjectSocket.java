@@ -13,15 +13,22 @@ import tools.SocketTools;
 public class ReceiveDeleteProjectSocket
 implements Runnable {
 	
-	private final String outputfileBase;
+	private final String outputBasePath;
 	private final static String SEPARATOR = "/";
 	
 	private final int port;
 	private ServerSocket socket;
 	private Socket c;
 	
-	public ReceiveDeleteProjectSocket(final int port, final String filePath) {
-		this.outputfileBase = filePath;
+	/**
+	 * Receive order to delete files related to a project sent by a client through a socket 
+	 * delete project with idSent
+	 * 
+	 * @param port of the socket
+	 * @param outputBasePath : base path of the output
+	 */
+	public ReceiveDeleteProjectSocket(final int port, final String outputBasePath) {
+		this.outputBasePath = outputBasePath;
 		this.port = port;
 	}
 	
@@ -33,7 +40,7 @@ implements Runnable {
 				System.out.println("Serveur reception de requête de suppresion de projet: en attente");
 				this.c = this.socket.accept();
 				System.out.println("Serveur: Connexion établie");
-				receiveFile(c);
+				deleteProjectFile(c);
 				TimeUnit.SECONDS.sleep(1);
 			}
 		} catch (IOException | InterruptedException e) {
@@ -48,32 +55,33 @@ implements Runnable {
 		
 	}
 	
-	private void receiveFile(final Socket c)
+	/**
+	 * Receive a order to delete all files related to a project
+	 * through socket send by a client and delete it
+	 * Step 1: Pulls idProjet
+	 * Step 2: Deletes recursively the folder containing all data about a project
+	 * Step 3: Sends a boolean answer to the server indicating if project has been successfully deleted
+	 * 
+	 * @param socket with the client
+	 * @throws IOException
+	 */
+	private void deleteProjectFile(final Socket c)
 	throws IOException {
-		/**
-		 * Permet de recevoir un fichier envoyé depuis l'application des professeurs
-		 * Le fichier reçu correspond au fichier de sortie attendu et sera stocké sur le serveur
-		 * avec le chemin suivant /BASE_PATH/Idprojet/output.txt
-		 * À la fin, une réponse est envoyé au serveur 0(échec), 1(succès)
-		 * indiquant si la réception du fichier est correcte et que celui-ci
-		 * a la taille correcte
-		 * @param socket du client
-		 */
 
 		boolean deleted = false;
 		final InputStream is = c.getInputStream();
 		final DataOutputStream dos = new DataOutputStream(c.getOutputStream());
 		
-		final byte repClientByte[] = new byte[36];
+		final byte idProjetByte[] = new byte[36];
 		try {
-			is.read(repClientByte, 0, 36);
+			is.read(idProjetByte, 0, 36);
 		} catch (final IOException ioe) {
 			
 			ioe.printStackTrace();
 		}
-		final String projName = new String(repClientByte).toString();
-		if (projName.matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")) {
-			final String outputFolder = this.outputfileBase + SEPARATOR + projName;
+		final String idProjet = new String(idProjetByte).toString();
+		if (idProjet.matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}")) {
+			final String outputFolder = this.outputBasePath + SEPARATOR + idProjet;
 			System.out.println(outputFolder);
 			final File dir = new File(outputFolder);
 			if (dir.exists()) {
