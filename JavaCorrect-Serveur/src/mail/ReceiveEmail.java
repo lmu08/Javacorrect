@@ -20,18 +20,14 @@ import javax.swing.filechooser.FileSystemView;
 
 import com.sun.mail.imap.IMAPStore;
 
-public class ReceiveEmail {
+import db.MysqlRequest;
 
-	private String currentUser;
+public class ReceiveEmail {
+	private final static String SEPARATOR = "/";
 
 	static String saveDirectory;
 
-	public static void receiveEmail(final String login, final String password)
-	throws Exception {
-		String idProjet, idProjetEtu;
-
-		idProjet = "Projet1";
-		idProjetEtu = "Etu1";
+	public static void receiveEmail(final String login, final String password) throws Exception {
 
 		final Properties properties = new Properties();
 		properties.put("mail.imap.host", "imap.gmail.com");
@@ -55,8 +51,7 @@ public class ReceiveEmail {
 
 				final Message message = messages[i];
 
-				System.out.println("message1 : " + message);
-				final Thread e = waitForRed(emailFolder, login, password, message, idProjet, idProjetEtu);
+				final Thread e = emailcontrol(emailFolder, login, password, message);
 				// message.setFlag(Flags.Flag.DELETED, false);
 				listThread = new LinkedList<>();
 				listThread.add(e);
@@ -79,7 +74,8 @@ public class ReceiveEmail {
 
 	}
 
-	private static Thread waitForRed(final Folder emailFolder, final String login, final String password, final Message message, final String idProjet, final String idProjetEtu) {
+	private static Thread emailcontrol(final Folder emailFolder, final String login, final String password,
+			final Message message) {
 
 		final Thread thread = new Thread(new Runnable() {
 			@Override
@@ -92,27 +88,25 @@ public class ReceiveEmail {
 							emailFolder.open(Folder.READ_WRITE);
 						}
 
-						System.out.println("message2 : " + message);
-
 						final String subject = message.getSubject();
 						System.out.println("sub : " + subject);
 
-						final Pattern p = Pattern.compile("/");
+						final Pattern p = Pattern.compile(SEPARATOR);
 						// séparation du subject en sous-chaînes
 						final String[] items = p.split(subject, 10);
-
-						// compilation de la regex
-						final Pattern patternProjet = Pattern.compile(idProjet + "/" + idProjetEtu);
-						// création d'un moteur de recherche
-						final Matcher matchSubject = patternProjet.matcher(items[0] + "/" + items[1]);
 
 						// f > chemin home (ex içi c'est /home/katy
 						final FileSystemView fsv = FileSystemView.getFileSystemView();
 						final File f = fsv.getDefaultDirectory();
 
-						saveDirectory = f.toString() + "/" + idProjet; // le répertoire du dossier du projet du prof
+						boolean matchSubj = MysqlRequest.checkProjectId(items[0], items[1]);
 
-						if (matchSubject.matches() /* && que le idProjet correspond à L'idEtu */) {
+						if (matchSubj) {
+
+							String idProjet = items[0];
+							saveDirectory = f.toString() + SEPARATOR + idProjet; // le répertoire du dossier du projet
+																					// du prof
+
 							final Multipart multipart = (Multipart) message.getContent();
 							System.out.println("nb de pièce joint : " + (multipart.getCount() - 1));
 
@@ -137,7 +131,7 @@ public class ReceiveEmail {
 									final String numEtu = zipFile.substring(0, zipFile.indexOf("."));
 
 									// création du dossier de l'étudiant
-									new File(saveDirectory + "/" + numEtu).mkdir();
+									new File(saveDirectory + SEPARATOR + numEtu).mkdir();
 
 									final String messageContent = part.getContent().toString();
 									System.out.println("Message : " + messageContent);
@@ -146,23 +140,24 @@ public class ReceiveEmail {
 									if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
 										// this part is attachment
 										final String fileName = part.getFileName();
-										part.saveFile(saveDirectory + File.separator + fileName);
+										part.saveFile(saveDirectory + SEPARATOR + fileName);
 									} else {
 										// this part may be the message content
 										System.out.println(messageContent);
 									}
 
 									// Unzip
-									final File zipFilePath = new File(saveDirectory + "/" + zipFile);
-									final File destDir = new File(saveDirectory + "/" + numEtu);
+									final File zipFilePath = new File(saveDirectory + SEPARATOR + zipFile);
+									final File destDir = new File(saveDirectory + SEPARATOR + numEtu);
 
 									MyZip.decompress(zipFilePath, destDir, true);
 									final String args = " ";
 									System.out.println(saveDirectory);
 
 									Notation.note(saveDirectory, numEtu, idProjet, args);
+
 									SendEmail.sendEmail(login, password, message.getFrom()[0].toString(), subject,
-										"votre devoir à bien été reçu");
+											"votre devoir à bien été reçu");
 								} else {
 									System.out.println("c'est pas le bon format du zip");
 								}

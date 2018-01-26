@@ -236,7 +236,6 @@ implements Initializable {
 				idProjet = rs.getString("idProjet");
 				System.out.println(idProjet);
 			} catch (final SQLException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 				showWarning(DELETE_PROJECT_ERROR, "Erreur lors de la récupération du projet en base de données");
 			}
@@ -245,7 +244,6 @@ implements Initializable {
 					System.out.println("Suppression du projet en cours");
 					MysqlRequest.deleteProjet(idProjet);
 				} catch (final SQLException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
 					showWarning(DELETE_PROJECT_ERROR, "Erreur lors de la suppression du projet");
 					
