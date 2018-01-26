@@ -1,5 +1,5 @@
 #! /bin/bash
 #javac
 
-cd $1 && javac Main.java
-cd $1 && java Main $3 > "$2/testEtu"
+cd $1 && javac Main.java 
+cd $1 && java Main $2 > "testEtu"

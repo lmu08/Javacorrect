@@ -1,6 +1,7 @@
 package mail;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
@@ -9,6 +10,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.mail.BodyPart;
+import javax.mail.Flags;
 import javax.mail.Folder;
 import javax.mail.Message;
 import javax.mail.MessagingException;
@@ -27,7 +29,8 @@ public class ReceiveEmail {
 
 	static String saveDirectory;
 
-	public static void receiveEmail(final String login, final String password) throws Exception {
+	public static void receiveEmail(final String login, final String password)
+	throws Exception {
 
 		final Properties properties = new Properties();
 		properties.put("mail.imap.host", "imap.gmail.com");
@@ -35,7 +38,7 @@ public class ReceiveEmail {
 		properties.put("mail.imap.auth", "true");
 		properties.put("mail.imap.ssl.enable", "true");
 
-		List<Thread> listThread = null;
+		List<Thread> listThread = new ArrayList<>();
 
 		try {
 			final IMAPStore emailStore = (IMAPStore) Session.getInstance(properties).getStore("imap");
@@ -52,10 +55,8 @@ public class ReceiveEmail {
 				final Message message = messages[i];
 
 				final Thread e = emailcontrol(emailFolder, login, password, message);
-				// message.setFlag(Flags.Flag.DELETED, false);
 				listThread = new LinkedList<>();
 				listThread.add(e);
-
 			}
 
 			// attente des threads
@@ -74,8 +75,7 @@ public class ReceiveEmail {
 
 	}
 
-	private static Thread emailcontrol(final Folder emailFolder, final String login, final String password,
-			final Message message) {
+	private static Thread emailcontrol(final Folder emailFolder, final String login, final String password, final Message message) {
 
 		final Thread thread = new Thread(new Runnable() {
 			@Override
@@ -99,77 +99,81 @@ public class ReceiveEmail {
 						final FileSystemView fsv = FileSystemView.getFileSystemView();
 						final File f = fsv.getDefaultDirectory();
 
-						boolean matchSubj = MysqlRequest.checkProjectId(items[0], items[1]);
-
-						if (matchSubj) {
-
-							String idProjet = items[0];
-							saveDirectory = f.toString() + SEPARATOR + idProjet; // le répertoire du dossier du projet
-																					// du prof
-
-							final Multipart multipart = (Multipart) message.getContent();
-							System.out.println("nb de pièce joint : " + (multipart.getCount() - 1));
-
-							for (int j = 1; j < multipart.getCount(); j++) {
-
-								final BodyPart bodyPart = multipart.getBodyPart(j);
-								// InputStream stream = bodyPart.getInputStream();
-								// BufferedReader br = new BufferedReader(new InputStreamReader(stream));
-								final MimeBodyPart part = (MimeBodyPart) multipart.getBodyPart(j);
-
-								final String zipFile = Optional.ofNullable(bodyPart.getFileName()).orElse("");
-
-								// compilation de la regex
-								final Pattern patternFile = Pattern.compile("^[0-9]{7}+.zip$");
-								// création d'un moteur de recherche
-								final Matcher matchNomFileZipe = patternFile.matcher(zipFile);
-
-								System.out.println("si c'est le bon .zip : " + matchNomFileZipe.matches());
-
-								if (matchNomFileZipe.matches() /* && le numEtu correspond à L'idEtu */) {
-
-									final String numEtu = zipFile.substring(0, zipFile.indexOf("."));
-
-									// création du dossier de l'étudiant
-									new File(saveDirectory + SEPARATOR + numEtu).mkdir();
-
-									final String messageContent = part.getContent().toString();
-									System.out.println("Message : " + messageContent);
-
-									// move Files
-									if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
-										// this part is attachment
-										final String fileName = part.getFileName();
-										part.saveFile(saveDirectory + SEPARATOR + fileName);
-									} else {
-										// this part may be the message content
-										System.out.println(messageContent);
-									}
-
-									// Unzip
-									final File zipFilePath = new File(saveDirectory + SEPARATOR + zipFile);
-									final File destDir = new File(saveDirectory + SEPARATOR + numEtu);
-
-									MyZip.decompress(zipFilePath, destDir, true);
-									final String args = " ";
-									System.out.println(saveDirectory);
-
-									Notation.note(saveDirectory, numEtu, idProjet, args);
-
-									SendEmail.sendEmail(login, password, message.getFrom()[0].toString(), subject,
+						if (items.length >= 2) {
+							final boolean matchSubj = MysqlRequest.checkProjectId(items[0], items[1]);
+							
+							if (matchSubj) {
+								
+								final String idProjet = items[0];
+								saveDirectory = f.toString() + SEPARATOR + idProjet; // le répertoire du dossier du projet
+																						// du prof
+								
+								final Multipart multipart = (Multipart) message.getContent();
+								System.out.println("nb de pièce joint : " + (multipart.getCount() - 1));
+								
+								for (int j = 1; j < multipart.getCount(); j++) {
+									
+									final BodyPart bodyPart = multipart.getBodyPart(j);
+									// InputStream stream = bodyPart.getInputStream();
+									// BufferedReader br = new BufferedReader(new InputStreamReader(stream));
+									final MimeBodyPart part = (MimeBodyPart) multipart.getBodyPart(j);
+									
+									final String zipFile = Optional.ofNullable(bodyPart.getFileName()).orElse("");
+									
+									// compilation de la regex
+									final Pattern patternFile = Pattern.compile("^[0-9]{7}+.zip$");
+									// création d'un moteur de recherche
+									final Matcher matchNomFileZipe = patternFile.matcher(zipFile);
+									
+									System.out.println("si c'est le bon .zip : " + matchNomFileZipe.matches());
+									
+									if (matchNomFileZipe.matches() /* && le numEtu correspond à L'idEtu */) {
+										
+										final String numEtu = zipFile.substring(0, zipFile.indexOf("."));
+										
+										// création du dossier de l'étudiant
+										new File(saveDirectory + SEPARATOR + numEtu).mkdir();
+										
+										final String messageContent = part.getContent().toString();
+										System.out.println("Message : " + messageContent);
+										
+										// move Files
+										if (Part.ATTACHMENT.equalsIgnoreCase(part.getDisposition())) {
+											// this part is attachment
+											final String fileName = part.getFileName();
+											part.saveFile(saveDirectory + SEPARATOR + fileName);
+										} else {
+											// this part may be the message content
+											System.out.println(messageContent);
+										}
+										
+										// Unzip
+										final File zipFilePath = new File(saveDirectory + SEPARATOR + zipFile);
+										final File destDir = new File(saveDirectory + SEPARATOR + numEtu);
+										
+										MyZip.decompress(zipFilePath, destDir, true);
+										final String args = " ";
+										System.out.println(saveDirectory);
+										
+										Notation.note(saveDirectory, numEtu, idProjet, args);
+										
+										SendEmail.sendEmail(login, password, message.getFrom()[0].toString(), subject,
 											"votre devoir à bien été reçu");
-								} else {
-									System.out.println("c'est pas le bon format du zip");
+									} else {
+										System.out.println("c'est pas le bon format du zip");
+									}
 								}
+							} else {
+								System.out.println("c'est pas le bon objet");
 							}
 						} else {
 							System.out.println("c'est pas le bon objet");
 						}
 						if (emailFolder.isOpen()) {
-							emailFolder.close(false);
+							message.setFlag(Flags.Flag.DELETED, true);
+							emailFolder.close(true);
 						}
 					} catch (final Exception e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
