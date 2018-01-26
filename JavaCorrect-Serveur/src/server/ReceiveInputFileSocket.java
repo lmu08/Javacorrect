@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
 import tools.SocketTools;
@@ -21,6 +22,7 @@ implements Runnable {
 	private final int port;
 	private ServerSocket socket;
 	private Socket c;
+	private String idProjet;
 
 	ReceiveInputFileSocket(final int port, final String filePath) {
 		this.outputfileBase = filePath;
@@ -37,9 +39,9 @@ implements Runnable {
 				System.out.println("Serveur: Connexion établie");
 				receiveFile(c);
 				TimeUnit.SECONDS.sleep(1);
+				MailCreation.mailCreation(idProjet);
 			}
-		} catch (IOException | InterruptedException e) {
-
+		} catch (IOException | InterruptedException | SQLException e) {
 			e.printStackTrace();
 		} finally {
 			try {
@@ -64,8 +66,9 @@ implements Runnable {
 				
 				ioe.printStackTrace();
 			}
-			final String repClient = new String(repClientByte).toString();
-			final String outputFolder = this.outputfileBase + SEPARATOR + repClient;
+			final String idProjet = new String(repClientByte).toString();
+			this.idProjet = idProjet;
+			final String outputFolder = this.outputfileBase + SEPARATOR + idProjet;
 			final File dir = new File(outputFolder);
 			if (!dir.exists()) {
 				dir.mkdirs();
@@ -73,7 +76,7 @@ implements Runnable {
 			final String outputFile = outputFolder + SEPARATOR + "output.txt";
 			
 			System.out.println(this.outputfileBase);
-			final int matches = repClient.matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}") ? 1 : 0;
+			final int matches = idProjet.matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}") ? 1 : 0;
 			dos.writeInt(matches);
 			final int sizeExcpected = dis.readInt();
 			System.out.println(sizeExcpected);
