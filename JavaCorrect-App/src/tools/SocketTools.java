@@ -7,6 +7,10 @@ public class SocketTools {
 	
 	private final static int TRUE = 1;
 
+	/**
+	 * @param binaryInt : a integer 0 for false, 1 for true
+	 * @return boolean value of integer
+	 */
 	public static boolean getBoolean(final int binaryInt) {
 		if (binaryInt == TRUE) {
 			return true;
@@ -15,6 +19,11 @@ public class SocketTools {
 		}
 	}
 	
+	/**
+	 * close a connection through a socket from client side 
+	 * @param c : specified client side socket to be close
+	 * @throws IOException
+	 */
 	public static void disconnect(final Socket c)
 	throws IOException {
 		System.out.println(c.isConnected());

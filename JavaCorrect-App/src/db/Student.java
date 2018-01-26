@@ -7,6 +7,14 @@ public class Student {
 	private final StudentGroup studentGroup;
 	private final String email;
 	
+	/**
+	 * represents a student 
+	 * @param nom
+	 * @param prenom
+	 * @param numEtu
+	 * @param email
+	 * @param studentGroup represent studentGroup (year and name of the group)
+	 */
 	public Student(final String nom, final String prenom, final int numEtu, final String email, final StudentGroup studentGroup) {
 		this.nom = nom;
 		this.prenom = prenom;

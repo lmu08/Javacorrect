@@ -14,9 +14,12 @@ public class MysqlPropertiesParser {
 	private String host;
 	private String dbname;
 	private String url;
-	
 	private static MysqlPropertiesParser instance = null;
-
+	
+	/**
+	 * Parses db.properties file and store it in different variable.
+	 * Then it's possible to get those with getters
+	 */
 	private MysqlPropertiesParser() {
 		final Properties prop = new Properties();
 		final File file = new File("resources/db.properties");
@@ -62,6 +65,10 @@ public class MysqlPropertiesParser {
 		return url;
 	}
 
+	/**
+	 * Singleton pattern
+	 * @return instance of this class
+	 */
 	public static synchronized MysqlPropertiesParser getInstance() {
 		if (instance == null) {
 			instance = new MysqlPropertiesParser();

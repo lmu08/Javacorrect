@@ -6,6 +6,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+/**
+ * class containing only static methods.
+ * make a request with prepared statement for each method 
+ *
+ */
 public class MysqlRequest {
 	private static final Connection myqlco = MysqlConnexion.getInstance(MysqlPropertiesParser.getInstance());
 

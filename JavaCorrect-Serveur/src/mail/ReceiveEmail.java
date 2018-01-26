@@ -32,48 +32,43 @@ public class ReceiveEmail {
 
 	public static void receiveEmail(final String login, final String password)
 	throws Exception {
-
-		final Properties properties = new Properties();
-		properties.put("mail.imap.host", "imap.gmail.com");
-		properties.put("mail.imap.port", "993");
-		properties.put("mail.imap.auth", "true");
-		properties.put("mail.imap.ssl.enable", "true");
-
+		
+		final Properties imapProps = MailPropertiesParser.getInstance().getImapProperties();
 		List<Thread> listThread = new ArrayList<>();
-
+		
 		try {
-			final IMAPStore emailStore = (IMAPStore) Session.getInstance(properties).getStore("imap");
+			final IMAPStore emailStore = (IMAPStore) Session.getInstance(imapProps).getStore("imap");
 			emailStore.connect(login, password);
-
+			
 			// create the folder object and open it
 			final Folder emailFolder = emailStore.getFolder("INBOX");
 			emailFolder.open(Folder.READ_WRITE);
-
+			
 			// retrieve the messages from the folder in an array and print it
 			final Message[] messages = emailFolder.getMessages();
 			for (int i = 0; i < messages.length; i++) {
-
+				
 				final Message message = messages[i];
-
+				
 				final Thread e = emailcontrol(emailFolder, login, password, message);
 				listThread = new LinkedList<>();
 				listThread.add(e);
 			}
-
+			
 			// attente des threads
 			for (final Thread thread : listThread) {
 				thread.join();
 			}
-
+			
 			if (emailFolder.isOpen()) {
 				emailFolder.close(false);
 			}
 			emailStore.close();
-
+			
 		} catch (final MessagingException e) {
 			e.printStackTrace();
 		}
-
+		
 	}
 
 	private static Thread emailcontrol(final Folder emailFolder, final String login, final String password, final Message message) {

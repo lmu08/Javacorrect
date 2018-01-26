@@ -7,6 +7,10 @@ import java.sql.SQLException;
 public class MysqlConnexion {
 	private static Connection connect = null;
 	
+	/**
+	 * Establish database connection through JDBC driver
+	 * @param properties the instance of MysqlPropertiesParser that represent all database propertie
+	 */
 	public MysqlConnexion(final MysqlPropertiesParser properties) {
 		if (properties.getUrl() != null && properties.getUser() != null && properties.getPassword() != null) {
 			try {
@@ -24,6 +28,11 @@ public class MysqlConnexion {
 		}
 	}
 	
+	/**
+	 * get the instance of the connection
+	 * @param properties parsed with MysqlPropertiesParser
+	 * @return connection of instance
+	 */
 	public static synchronized Connection getInstance(final MysqlPropertiesParser properties) {
 		if (connect == null) {
 			new MysqlConnexion(properties);

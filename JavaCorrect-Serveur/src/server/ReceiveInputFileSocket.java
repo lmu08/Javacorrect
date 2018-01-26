@@ -16,7 +16,7 @@ import tools.SocketTools;
 public class ReceiveInputFileSocket
 implements Runnable {
 
-	private final String outputfileBase;
+	private final String outputBasePath;
 	private final static String SEPARATOR = "/";
 
 	private final int port;
@@ -24,11 +24,19 @@ implements Runnable {
 	private Socket c;
 	private String idProjet;
 
-	public ReceiveInputFileSocket(final int port, final String filePath) {
-		this.outputfileBase = filePath;
+	/**
+	 * Receive file sent by a client through a socket
+	 * @param port of the socket
+	 * @param outputBasePath : base path of the output
+	 */
+	public ReceiveInputFileSocket(final int port, final String outputBasePath) {
+		this.outputBasePath = outputBasePath;
 		this.port = port;
 	}
 
+	/**
+	 * 
+	 */
 	@Override
 	public void run() {
 		try {
@@ -52,6 +60,19 @@ implements Runnable {
 		}
 	}
 
+	/**
+	 * Receive a file through socket send by a client
+	 * Step 1: Pulls idProjet send by client
+	 * Step 2: Creates a directory with idProjet as name like this <BASEPATH>/<idProjet>
+	 * Step 3: Sends a boolean to client indicating if works
+	 * Step 4: Pulls size of file
+	 * Step 5: Sends a boolean to client indicating if works
+	 * Step 6: Pulls file and create it at this path <BASEPATH>/<idProjet>
+	 * Step 7: Sends a boolean to client indicating if file has been successfully transfered
+	 * 
+	 * @param c : socket with client
+	 * @throws IOException
+	 */
 	private void receiveFile(final Socket c)
 	throws IOException {
 		FileOutputStream fos;
@@ -59,23 +80,23 @@ implements Runnable {
 		final DataInputStream dis = new DataInputStream(is); //
 		final DataOutputStream dos = new DataOutputStream(c.getOutputStream());) {
 			
-			final byte repClientByte[] = new byte[36];
+			final byte idProjetByte[] = new byte[36];
 			try {
-				is.read(repClientByte, 0, 36);
+				is.read(idProjetByte, 0, 36);
 			} catch (final IOException ioe) {
 				
 				ioe.printStackTrace();
 			}
-			final String idProjet = new String(repClientByte).toString();
+			final String idProjet = new String(idProjetByte).toString();
 			this.idProjet = idProjet;
-			final String outputFolder = this.outputfileBase + SEPARATOR + idProjet;
+			final String outputFolder = this.outputBasePath + SEPARATOR + idProjet;
 			final File dir = new File(outputFolder);
 			if (!dir.exists()) {
 				dir.mkdirs();
 			}
 			final String outputFile = outputFolder + SEPARATOR + "output.txt";
 			
-			System.out.println(this.outputfileBase);
+			System.out.println(this.outputBasePath);
 			final int matches = idProjet.matches("[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}") ? 1 : 0;
 			dos.writeInt(matches);
 			final int sizeExcpected = dis.readInt();

@@ -1,5 +1,7 @@
 package mail;
 
+import java.util.Properties;
+
 import server.ReceiveDeleteProjectSocket;
 import server.ReceiveInputFileSocket;
 
@@ -12,7 +14,8 @@ public class MailFichier {
 		
 		while (true) {
 			try {
-				ReceiveEmail.receiveEmail("java.correct@gmail.com", "789@Upmc");
+				final Properties props = MailPropertiesParser.getInstance().getMailAdressProperties();
+				ReceiveEmail.receiveEmail(props.getProperty("address"), props.getProperty("password"));
 			} catch (final Exception e) {
 				e.printStackTrace();
 			}
