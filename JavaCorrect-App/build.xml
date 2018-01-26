@@ -20,7 +20,7 @@
         </copy>
     </target>
     <target name="compile">  
-        <javac srcdir="." destdir="${dir.bin}">  
+        <javac includeantruntime="false" srcdir="." destdir="${dir.bin}">  
 	    <classpath>  
 	        <fileset dir="${dir.lib}">
 	    	<include name="**/*.jar" />
