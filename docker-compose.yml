@@ -1,11 +1,13 @@
 version: "3"
 services:
-  serv:
-    container_name: javacorrect-serv
-    build: "./JavaCorrect-Serveur"
   db:
     container_name: javacorrect-db
     build: "./JavaCorrectDatabase"
     ports:
       - "3306:3306"
-
+  serv:
+    container_name: javacorrect-serv
+    build: "./JavaCorrect-Serveur"
+    ports:
+      - "52112:52112"
+      - "52113:52113"

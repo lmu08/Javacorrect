@@ -12,19 +12,19 @@ import tools.SocketTools;
 
 public class ReceiveDeleteProjectSocket
 implements Runnable {
-
+	
 	private final String outputfileBase;
 	private final static String SEPARATOR = "/";
-
+	
 	private final int port;
 	private ServerSocket socket;
 	private Socket c;
-
-	ReceiveDeleteProjectSocket(final int port, final String filePath) {
+	
+	public ReceiveDeleteProjectSocket(final int port, final String filePath) {
 		this.outputfileBase = filePath;
 		this.port = port;
 	}
-
+	
 	@Override
 	public void run() {
 		try {
@@ -45,9 +45,9 @@ implements Runnable {
 				e.printStackTrace();
 			}
 		}
-
+		
 	}
-
+	
 	private void receiveFile(final Socket c)
 	throws IOException {
 		/**
@@ -59,16 +59,16 @@ implements Runnable {
 		 * a la taille correcte
 		 * @param socket du client
 		 */
-		
+
 		boolean deleted = false;
 		final InputStream is = c.getInputStream();
 		final DataOutputStream dos = new DataOutputStream(c.getOutputStream());
-
+		
 		final byte repClientByte[] = new byte[36];
 		try {
 			is.read(repClientByte, 0, 36);
 		} catch (final IOException ioe) {
-
+			
 			ioe.printStackTrace();
 		}
 		final String projName = new String(repClientByte).toString();
@@ -87,6 +87,6 @@ implements Runnable {
 			}
 		}
 		dos.writeInt((deleted) ? 1 : 0);
-
+		
 	}
 }

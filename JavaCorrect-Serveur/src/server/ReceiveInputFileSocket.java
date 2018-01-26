@@ -24,7 +24,7 @@ implements Runnable {
 	private Socket c;
 	private String idProjet;
 
-	ReceiveInputFileSocket(final int port, final String filePath) {
+	public ReceiveInputFileSocket(final int port, final String filePath) {
 		this.outputfileBase = filePath;
 		this.port = port;
 	}

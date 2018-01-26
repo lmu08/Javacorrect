@@ -23,7 +23,7 @@ public class MysqlRequest {
 		statement.setString(2, studentId);
 		return statement.executeQuery().first(); // returns true if a match is found
 	}
-
+	
 	public static ResultSet getEmailByidProjet(String idProjet) throws SQLException {
 		String getMailByidProjet = "SELECT emailEtu from javacorrectdb.ETUDIANT WHERE numEtu IN (SELECT numEtu from EVALUATION where EVALUATION.PROJET_idProjet= ?);";
 		PreparedStatement preparedstatement = myqlco.prepareStatement(getMailByidProjet);
