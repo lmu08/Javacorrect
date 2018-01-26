@@ -8,9 +8,6 @@ import javafx.stage.Stage;
 public class Main extends Application {
 
 	public static void main(final String[] args) {
-		// Thread receiveInputFile = new Thread(new ReceiveInputFileSocket(52112,
-		// "/home/flo"));
-		// receiveInputFile.start();
 		Application.launch(args);
 		System.out.println();
 	}

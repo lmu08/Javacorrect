@@ -9,6 +9,12 @@ import java.time.LocalDate;
 
 import tools.EncryptingTools;
 
+/**
+ * class containing only static methods.
+ * make a request with prepared statement for each method 
+ * @author Florent Yaicene
+ *
+ */
 public class MysqlRequest {
 	private static final Connection myqlco = MysqlConnexion.getInstance(MysqlPropertiesParser.getInstance());
 

@@ -38,7 +38,6 @@ public class ReceiveEmail {
 		try {
 			final IMAPStore emailStore = (IMAPStore) Session.getInstance(imapProps).getStore("imap");
 			emailStore.connect(login, password);
-
 			// create the folder object and open it
 			final Folder emailFolder = emailStore.getFolder("INBOX");
 			emailFolder.open(Folder.READ_WRITE);

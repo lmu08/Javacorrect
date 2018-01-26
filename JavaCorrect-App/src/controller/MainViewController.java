@@ -47,6 +47,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
+import tools.AlertTools;
 
 public class MainViewController
 implements Initializable {
@@ -119,19 +120,25 @@ implements Initializable {
 		argumentsField.textProperty().addListener(event -> updateCreateProjectButton());
 		this.host = "localhost";
 	}
-	
+	/**
+	 * Sets current user in a variable
+	 * @param windowManager
+	 * @param login
+	 */
 	public void initUser(final WindowManager windowManager, final String login) {
 		this.currentUser = login;
 		logoutContextMenu.setOnAction(event -> {
-			final Alert alert = new Alert(AlertType.CONFIRMATION);
-			alert.setTitle("Logout");
-			alert.setContentText("Are you sure you want to logout ?");
-			alert.showAndWait().filter(ButtonType.OK::equals).ifPresent(button -> windowManager.showLoginView());
+			AlertTools.showConfirmation("Logout","Are you sure you want to logout ?")
+			.filter(ButtonType.OK::equals).ifPresent(button -> windowManager.showLoginView());
 
 		});
 		projectNameButton.setItems(FXCollections.observableList(queryProjectNames()));
 	}
 
+	/**
+	 * Gets a list with all projects by their name(intituleProjet)
+	 * @return List of all projects
+	 */
 	private List<String> queryProjectNames() {
 		final ArrayList<String> al = new ArrayList<>();
 		String projectName;
@@ -156,6 +163,15 @@ implements Initializable {
 		private final SimpleObjectProperty<Date> sendDate;
 		private final SimpleStringProperty studentGroup;
 		
+		/**
+		 * makes an object to store a marking for a student
+		 * @param studentName
+		 * @param studentId
+		 * @param studentEmail
+		 * @param studentGroup
+		 * @param mark
+		 * @param sendDate
+		 */
 		public StudentProject(final String studentName, final Integer studentId, final String studentEmail, final String studentGroup, final Double mark, final Date sendDate) {
 			this.studentName = (studentName == null) ? new SimpleStringProperty() : new SimpleStringProperty(studentName);
 			this.studentId = (studentId == null) ? new SimpleIntegerProperty() : new SimpleIntegerProperty(studentId);
@@ -190,6 +206,9 @@ implements Initializable {
 		}
 	}
 	
+	/**
+	 * updates a table
+	 */
 	private void updateTable() {
 		try {
 			studentProjectsTable.setItems(parseStudentProjectList());
@@ -199,6 +218,12 @@ implements Initializable {
 		}
 	}
 	
+	/**
+	 * Pulls all marking data related to a project and store it in a List
+	 * 
+	 * @return List of Marking(EVALUATION table) containing students
+	 * @throws MarkingDbManagementException
+	 */
 	private ObservableList<StudentProject> parseStudentProjectList()
 	throws MarkingDbManagementException {
 		final String intituleProjet = projectNameButton.getValue();
@@ -221,12 +246,12 @@ implements Initializable {
 		return FXCollections.observableArrayList(projets);
 	}
 	
+	/**
+	 * Deletes a project 
+	 */
 	@FXML
 	private void handleDeleteProjectAction() {
-		Alert alert = new Alert(AlertType.CONFIRMATION);
-		alert.setHeaderText("Voulez-vous vraiment supprimer ce projet ");
-		alert.setContentText("ATTENTION : action irreversible");
-		final Optional<ButtonType> result = alert.showAndWait();
+		final Optional<ButtonType> result = AlertTools.showConfirmation("Voulez-vous vraiment supprimer ce projet ", "ATTENTION : action irreversible");
 		if ((result.isPresent()) && (result.get() == ButtonType.OK)) {
 			String idProjet = null;
 			final String intituleProjet = projectNameButton.getValue();
@@ -237,7 +262,7 @@ implements Initializable {
 				System.out.println(idProjet);
 			} catch (final SQLException e) {
 				e.printStackTrace();
-				showWarning(DELETE_PROJECT_ERROR, "Erreur lors de la récupération du projet en base de données");
+				AlertTools.showWarning(DELETE_PROJECT_ERROR, "Erreur lors de la récupération du projet en base de données");
 			}
 			if (deleteProjectFiles(this.host, DELETE_PROJECT_PORT, idProjet)) {
 				try {
@@ -245,27 +270,35 @@ implements Initializable {
 					MysqlRequest.deleteProjet(idProjet);
 				} catch (final SQLException e) {
 					e.printStackTrace();
-					showWarning(DELETE_PROJECT_ERROR, "Erreur lors de la suppression du projet");
+					AlertTools.showWarning(DELETE_PROJECT_ERROR, "Erreur lors de la suppression du projet");
 					
 				}
 			}
 			updateTable();
-			alert = new Alert(AlertType.INFORMATION);
-			alert.setHeaderText("Suppression réussie");
-			alert.setContentText("Le projet a été supprimé avec succès");
-			alert.show();
+			AlertTools.showAlert(AlertType.INFORMATION, "Suppression réussie", "Le projet a été supprimé avec succès");
 		}
 	}
 
-	public boolean deleteProjectFiles(final String host, final int port, final String projName) {
+	/**
+	 * Sends a request of deleting concerning a project to the server.
+	 * This request is sent using a socket contained in a Collable<Boolean> Thread.
+	 * 
+	 * @param host
+	 * @param port
+	 * @param idProjet
+	 * @return indicates if files has been successfully deleted.
+	 */
+	public boolean deleteProjectFiles(final String host, final int port, final String idProjet) {
+		// ExecutorService make use of callable able. 
+		// Callable is needed to get a returned value
 		final ExecutorService pool = Executors.newFixedThreadPool(1);
-		final Callable<Boolean> task = new DeleteProjectSocket(host, port, projName);
+		final Callable<Boolean> task = new DeleteProjectSocket(host, port, idProjet);
 		final Future<Boolean> future = pool.submit(task);
 		boolean bool = false;
 		try {
 			bool = future.get().booleanValue();
 			if (!bool) {
-				showWarning(DELETE_PROJECT_ERROR, "erreur de suppression des fichiers associés sur le serveur");
+				AlertTools.showWarning(DELETE_PROJECT_ERROR, "erreur de suppression des fichiers associés sur le serveur");
 			}
 		} catch (final InterruptedException | ExecutionException e) {
 			e.printStackTrace();
@@ -273,6 +306,9 @@ implements Initializable {
 		return bool;
 	}
 	
+	/**
+	 * Makes a Txt file chooser and fetch filePath and show in on the pressed button
+	 */
 	@FXML
 	private void handleSelectOutputAction() {
 		final FileChooser fileChooser = new FileChooser();
@@ -286,6 +322,9 @@ implements Initializable {
 		updateCreateProjectButton();
 	}
 	
+	/**
+	 * Makes a CSV file chooser and fetch filePath and show in on the pressed button
+	 */
 	@FXML
 	private void handleSelectListAction() {
 		final FileChooser fileChooser = new FileChooser();
@@ -299,10 +338,11 @@ implements Initializable {
 		updateCreateProjectButton();
 	}
 
+	/**
+	 * creates a project
+	 */
 	@FXML
 	private void handleCreateProjectAction() {
-		@SuppressWarnings("unused")
-		final String expectedOutputPath = (String) expectedOutputButton.getUserData();
 		
 		try {
 			//Create the project in db
@@ -313,40 +353,46 @@ implements Initializable {
 					//Parse the student list and send it to db
 					if (sendOutputFileProjet(this.host, SEND_FILE_PORT, projectId.get())) {
 						insertCSV(projectId.get());
-						final Alert alert = new Alert(AlertType.INFORMATION);
-						alert.setHeaderText("Création réussie");
-						alert.setContentText("Le projet a été créé avec succès");
-						alert.show();
+						AlertTools.showAlert(AlertType.INFORMATION, "Création réussie", "Le projet a été créé avec succès");
 					}
 
 				} catch (final SQLException e) {
 					e.printStackTrace();
 					System.out.println(e.getSQLState());
-					showWarning(SAVE_CSV_ERROR, "Une erreur serveur s'est produite lors de l'enregistrement du csv.");
+					AlertTools.showWarning(SAVE_CSV_ERROR, "Une erreur serveur s'est produite lors de l'enregistrement du csv.");
 				}
 			}
 		} catch (final SQLException e) {
 			e.printStackTrace();
 			System.out.println(e.getSQLState());
-			showWarning(PROJECT_CREATION_ERROR, "Une erreur serveur s'est produite lors de la création du projet.");
+			AlertTools.showWarning(PROJECT_CREATION_ERROR, "Une erreur serveur s'est produite lors de la création du projet.");
 		}
 	}
 
-	private boolean sendOutputFileProjet(final String serveur, final int port, final String projName) {
+	/**
+	 * Makes and start a thread sending a file to a specified server
+	 * 
+	 * @param host : host name of server to send file
+	 * @param port : port of socket
+	 * @param idProjet : id of project (UUID)
+	 * @return indicates if file has been well sent
+	 */
+	private boolean sendOutputFileProjet(final String host, final int port, final String idProjet) {
 		final String expectedOutputPath = (String) expectedOutputButton.getUserData();
 		final File fichier = new File(expectedOutputPath);
 		if (!fichier.exists()) {
-			showWarning(PROJECT_CREATION_ERROR, "Le fichier passé en paramètre n'existe pas");
+			AlertTools.showWarning(PROJECT_CREATION_ERROR, "Le fichier passé en paramètre n'existe pas");
 		}
 
+		// ExecutorService to make Callable thread with return value
 		final ExecutorService pool = Executors.newFixedThreadPool(15);
-		final Callable<Boolean> task = new SendOutputFileSocket(serveur, port, expectedOutputPath, projName);
+		final Callable<Boolean> task = new SendOutputFileSocket(host, port, expectedOutputPath, idProjet);
 		final Future<Boolean> future = pool.submit(task);
 		boolean bool = false;
 		try {
 			bool = future.get().booleanValue();
 			if (!bool) {
-				showWarning(SEND_OUTPUTFILE_ERROR, "erreur lors de la connexion au serveur ou de l'envoi");
+				AlertTools.showWarning(SEND_OUTPUTFILE_ERROR, "erreur lors de la connexion au serveur ou de l'envoi");
 			}
 		} catch (final InterruptedException | ExecutionException e) {
 			e.printStackTrace();
@@ -355,16 +401,21 @@ implements Initializable {
 
 	}
 	
+	/**
+	 * Inserts project within database
+	 * @return projectId if exists
+	 * @throws SQLException
+	 */
 	private Optional<String> insertProject()
 	throws SQLException {
 		final String projectId = UUID.randomUUID().toString();
 		final LocalDate deadline = deadlineDatePicker.getValue();
 		if (deadline.compareTo(LocalDate.now().plusDays(3)) < 0) {
-			showWarning(PROJECT_CREATION_ERROR, "L'échéance du projet doit être de 3 jours minimum.");
+			AlertTools.showWarning(PROJECT_CREATION_ERROR, "L'échéance du projet doit être de 3 jours minimum.");
 		} else {
 			final String projectName = projectNameField.getText();
 			if (MysqlRequest.getEvaluationByLoginProjName(currentUser, projectName).isBeforeFirst()) {
-				showWarning(PROJECT_CREATION_ERROR, "Vous avez déjà créé un projet du même nom.");
+				AlertTools.showWarning(PROJECT_CREATION_ERROR, "Vous avez déjà créé un projet du même nom.");
 			} else {
 				final String arguments = argumentsField.getText();
 				MysqlRequest.insertProject(projectId, deadline, projectName, arguments);
@@ -374,6 +425,9 @@ implements Initializable {
 		return Optional.empty();
 	}
 	
+	/**
+	 * Parses CSV file put by user on the application and add all data to database
+	 */
 	private void insertCSV(final String projectId)
 	throws SQLException {
 		final StudentCsvParser sparser = new StudentCsvParser();
@@ -403,13 +457,9 @@ implements Initializable {
 		}
 	}
 	
-	void showWarning(final String title, final String message) {
-		final Alert alert = new Alert(AlertType.WARNING);
-		alert.setHeaderText(title);
-		alert.setContentText(message);
-		alert.show();
-	}
-	
+	/**
+	 * Allows button to be clicked when data are entered to create a project
+	 */
 	private void updateCreateProjectButton() {
 		createProjectButton.setDisable(projectNameField.getText().isEmpty() || deadlineDatePicker.getValue() == null || (String) studentListButton.getUserData() == null || (String) expectedOutputButton.getUserData() == null || argumentsField.getText().isEmpty());
 	}

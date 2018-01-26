@@ -10,22 +10,28 @@ import java.util.concurrent.Callable;
 
 import tools.SocketTools;
 
-public class DeleteProjectSocket
-implements Callable<Boolean> {
-	
+public class DeleteProjectSocket implements Callable<Boolean> {
+
 	private final String projName;
 	private final int port;
 	private final String host;
 	private Socket c;
-	private final boolean isConnected;
-	
+
+	/**
+	 * Send a request to the server to delete files of specified project through
+	 * socket
+	 * 
+	 * @param host : host name of server
+	 * @param port : port of the socket
+	 * @param projName : idProjet in database
+	 * 
+	 */
 	DeleteProjectSocket(final String host, final int port, final String projName) {
 		this.projName = projName;
 		this.port = port;
 		this.host = host;
-		this.isConnected = false;
 	}
-	
+
 	@Override
 	public Boolean call() {
 		boolean res = false;
@@ -41,17 +47,22 @@ implements Callable<Boolean> {
 		}
 		return res;
 	}
-	
-	private boolean sendFile(final Socket c)
-	throws IOException {
+
+	/**
+	 * 
+	 * @param c socket with server
+	 * @return boolean that indicate if the request has well been treated
+	 * @throws IOException
+	 */
+	private boolean sendFile(final Socket c) throws IOException {
 		try (final InputStream is = c.getInputStream(); //
-		final DataInputStream dis = new DataInputStream(is); //
-		final OutputStream os = c.getOutputStream();) {
+				final DataInputStream dis = new DataInputStream(is); //
+				final OutputStream os = c.getOutputStream();) {
 
 			System.out.println("Envoi de au serveur");
 			os.write(this.projName.getBytes("UTF8"));
 			return (dis.readInt() == 1) ? true : false;
 		}
 	}
-	
+
 }

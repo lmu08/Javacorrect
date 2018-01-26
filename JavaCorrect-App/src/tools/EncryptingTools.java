@@ -5,6 +5,12 @@ import java.security.NoSuchAlgorithmException;
 
 public class EncryptingTools {
 
+	/**
+	 * Encrypts a message with specified algorithm
+	 * @param clearText : a message to be encrypted
+	 * @param algorithm : algorithm encryption ex: "SHA-256"
+	 * @return encrypted message
+	 */
 	public static String clearTextToEncrypted(final String clearText, final String algorithm) {
 		final StringBuffer result = new StringBuffer();
 		MessageDigest md;
