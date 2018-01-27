@@ -13,7 +13,17 @@ import javax.mail.internet.MimeMessage;
 
 public class SendEmail {
 	
-	public static void sendEmail(final String login, final String password, final String toEmail, final String subject, final String body) {
+	/**
+	 * Envoie des mails 
+	 * @param login de notre boite mail
+	 * @param password 
+	 * @param toEmail le mail du récepteur
+	 * @param subjet m'objet du mail à envoyer 
+	 * @param body le texte à envoyer 
+	 */
+	
+	public static void sendEmail(final String login, final String password, final String toEmail,
+			final String subject, final String body) {
 		
 		final Properties smtpProps = MailPropertiesParser.getInstance().getSmtpProperties();
 		final MimeMessage msg = new MimeMessage(Session.getInstance(smtpProps));

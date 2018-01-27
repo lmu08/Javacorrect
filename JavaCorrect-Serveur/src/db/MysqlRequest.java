@@ -29,6 +29,18 @@ public class MysqlRequest {
 		return statement.executeQuery().first(); // returns true if a match is found
 	}
 	
+	public static boolean checknumEtiIDEtu(final int numEtu, String idEtu) throws SQLException {
+		final String request = 
+		"SELECT * FROM javacorrectdb.ETUDIANT " + 
+		"WHERE ETUDIANT_numEtu=? "+
+		"AND ETUDIANT_idEtu=?" + 
+		"AS subquery);";
+		final PreparedStatement statement = myqlco.prepareStatement(request);
+		statement.setInt(1, numEtu);
+		statement.setString(2, idEtu);
+		return statement.executeQuery().first(); // returns true if a match is found
+	}
+	
 	public static ResultSet getEmailByidProjet(String idProjet) throws SQLException {
 		String getMailByidProjet = "SELECT emailEtu from javacorrectdb.ETUDIANT WHERE numEtu IN (SELECT numEtu from EVALUATION where EVALUATION.PROJET_idProjet= ?);";
 		PreparedStatement preparedstatement = myqlco.prepareStatement(getMailByidProjet);

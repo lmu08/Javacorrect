@@ -32,8 +32,18 @@ public class ReceiveEmail {
 	
 	static String saveDirectory;
 	
+	/**
+	 * Reception des mails, récupération des devoirs, suppression de chaque mail,
+	 * création d'un thread pour chaque mail
+	 * un appel à la fonction notation() pour chaque devoir récupérer 
+	 * 
+	 * @param login mail où on récupère les devoir envoyer
+	 * @param password
+	 * @throws Exception qui gère les exceptions du thread 
+	 * 
+	 */
 	public static void receiveEmail(final String login, final String password)
-	throws Exception {
+			throws Exception {
 
 		final Properties imapProps = MailPropertiesParser.getInstance().getImapProperties();
 		List<Thread> listThread = new ArrayList<>();
@@ -42,26 +52,28 @@ public class ReceiveEmail {
 			final IMAPStore emailStore = (IMAPStore) Session.getInstance(imapProps).getStore("imap");
 			emailStore.connect(login, password);
 
-			// create the folder object and open it
+			//Création du folder object
 			final Folder emailFolder = emailStore.getFolder("INBOX");
 			emailFolder.open(Folder.READ_WRITE);
 
-			// retrieve the messages from the folder in an array and print it
+			//Récupération des mail à partir du folder
 			final Message[] messages = emailFolder.getMessages();
 			for (int i = 0; i < messages.length; i++) {
 
 				final Message message = messages[i];
 
+				//création d'un thread pour chaque mail
 				final Thread e = emailcontrol(emailFolder, login, password, message);
 				listThread = new LinkedList<>();
 				listThread.add(e);
 			}
 
-			// attente des threads
+			//Attente des threads
 			for (final Thread thread : listThread) {
 				thread.join();
 			}
 
+			//Fermeture du emailFolder 
 			if (emailFolder.isOpen()) {
 				emailFolder.close(false);
 			}
@@ -73,7 +85,16 @@ public class ReceiveEmail {
 
 	}
 	
-	private static Thread emailcontrol(final Folder emailFolder, final String login, final String password, final Message message) {
+	/**
+	 * Pour chaque mail on crée un thread pour gagner du temps 
+	 * 
+	 * @param emailFolder le folder pour récupérer un mail   
+	 * @param login 
+	 * @param password
+	 * @param message le mail que nous somme en train de traiter 
+	 */
+	private static Thread emailcontrol(final Folder emailFolder, final String login, final String password, 
+			final Message message) {
 		
 		final Thread thread = new Thread(new Runnable() {
 			@Override
@@ -93,46 +114,52 @@ public class ReceiveEmail {
 						System.out.println("sub : " + subject);
 						
 						final Pattern p = Pattern.compile(SEPARATOR);
-						// séparation du subject en sous-chaînes
+						//Séparation du subject en sous-chaînes
 						final String[] items = p.split(subject, 10);
 						
-						// f > chemin home (ex içi c'est /home/katy
+						// f > chemin home 
 						final FileSystemView fsv = FileSystemView.getFileSystemView();
 						final File f = fsv.getDefaultDirectory();
 						
+						//Vérification du subject 
 						if (items.length >= 2) {
 							final boolean matchSubj = MysqlRequest.checkProjectId(items[0], items[1]);
 							
+							//Si le idEtudant et idProjet sont dans la même table dans la base de donnée 
 							if (matchSubj) {
 								
 								final String idProjet = items[0];
-								saveDirectory = f.toString() + SEPARATOR + idProjet; // le répertoire du dossier du projet
-																						// du prof
+								final String idEtu = items[1];
+								
+								//le répertoire du dossier du projet du prof
+								saveDirectory = f.toString() + SEPARATOR + idProjet;
 								
 								final Multipart multipart = (Multipart) message.getContent();
 								System.out.println("nb de pièce joint : " + (multipart.getCount() - 1));
 								
+								//Récupération des pièce joint
 								for (int j = 1; j < multipart.getCount(); j++) {
 									
 									final BodyPart bodyPart = multipart.getBodyPart(j);
-									// InputStream stream = bodyPart.getInputStream();
-									// BufferedReader br = new BufferedReader(new InputStreamReader(stream));
 									final MimeBodyPart part = (MimeBodyPart) multipart.getBodyPart(j);
 									
 									final String zipFile = Optional.ofNullable(bodyPart.getFileName()).orElse("");
 									
-									// compilation de la regex
+									//Vérification de la pièce joint 
+									//Compilation de la regex
 									final Pattern patternFile = Pattern.compile("^[0-9]{7}+.zip$");
-									// création d'un moteur de recherche
+									// Création d'un moteur de recherche
 									final Matcher matchNomFileZipe = patternFile.matcher(zipFile);
 									
 									System.out.println("si c'est le bon .zip : " + matchNomFileZipe.matches());
 									
-									if (matchNomFileZipe.matches() /* && le numEtu correspond à L'idEtu */) {
+									final String numEtu = zipFile.substring(0, zipFile.indexOf("."));
+
+									final boolean marchIdNumEtu = MysqlRequest.checknumEtiIDEtu(Integer.parseInt(numEtu) , idEtu);
+									//le bon format du .zip et que le numEtu correspond à L'idEtu 
+									if (matchNomFileZipe.matches() && marchIdNumEtu ) {
 										
-										final String numEtu = zipFile.substring(0, zipFile.indexOf("."));
-										
-										// création du dossier de l'étudiant
+										//Création du dossier de l'étudiant
 										new File(saveDirectory + SEPARATOR + numEtu).mkdir();
 										
 										final String messageContent = part.getContent().toString();
@@ -158,8 +185,10 @@ public class ReceiveEmail {
 										final String args = rsArgs.getString("arguments");
 										System.out.println(saveDirectory);
 										
+										//Notation du devoir
 										Notation.note(saveDirectory, numEtu, idProjet, args, date);
 										
+										//Mail de confirmation 
 										SendEmail.sendEmail(login, password, message.getFrom()[0].toString(), subject,
 											"votre devoir à bien été reçu");
 									} else {
@@ -172,6 +201,7 @@ public class ReceiveEmail {
 						} else {
 							System.out.println("c'est pas le bon objet");
 						}
+						//Suppression du mail
 						message.setFlag(Flags.Flag.DELETED, true);
 					} catch (final Exception e) {
 						e.printStackTrace();

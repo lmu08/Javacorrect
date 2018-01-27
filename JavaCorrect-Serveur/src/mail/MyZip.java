@@ -14,7 +14,7 @@ import java.util.zip.ZipInputStream;
 public class MyZip {
 
 	/**
-	 * décompresse le fichier zip dans le répertoire donné
+	 * Décompresse le fichier zip dans le répertoire donné (le répertoire de l'étudiant)
 	 *
 	 * @param file le fichier zip à décompresser
 	 * @param folder le répertoire où les fichiers seront extraits
